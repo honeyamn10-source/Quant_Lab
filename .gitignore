@@ -12,6 +12,7 @@ dist/
 *.parquet
 experiments/
 data/
+datasets/*.json
 !.github/
 *.pyc
 .DS_Store

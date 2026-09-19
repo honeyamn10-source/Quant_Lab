@@ -7,7 +7,7 @@ Surface:
     quantlab backtest <config.yaml>
     quantlab validate <results.json>
     quantlab stress <experiment-id>
-    quantlab regimes <file.json> [--symbol SYM]
+    quantlab regimes <file.json> [--seed N]
     quantlab volatility <file.json>
     quantlab report <experiment-id>
     quantlab graveyard list

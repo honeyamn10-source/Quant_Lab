@@ -60,6 +60,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   of being a silent no-op.
 - CI typecheck job installs the full dev extras (mypy needs PyYAML type stubs);
   lint now covers `benchmarks/`.
+- `build>=1.0` added to dev extras so the Makefile `build` target works.
+- `.gitignore` now honors the documented contract that `datasets/*.json` raw
+  files stay out of git; `regimes` CLI docstring no longer advertises a
+  nonexistent `--symbol` flag.
 - Makefile `test`/`test-all` run the full suite; `test-lookahead` uses the
   `lookahead` marker; lint/format cover `benchmarks/`.
 - Test suite markers (`lookahead`, `synthetic`, `statistical`) now attached so
