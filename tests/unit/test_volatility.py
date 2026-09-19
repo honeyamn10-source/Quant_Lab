@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 from quantlab.volatility import (
     benchmark_models,
     ewma_vol,
@@ -47,6 +48,7 @@ def test_ewma_warmup_and_positivity():
 
 
 def test_garch_family_garch_on_clustered_returns():
+    pytest.importorskip("scipy", reason="GARCH MLE requires scipy (install 'quantlab[ml]')")
     r = _clustered_returns(n=1150)
     fit = garch_family("garch", r)
     assert fit["model"] == "GARCH"
@@ -69,6 +71,7 @@ def test_vol_metrics_all_keys_finite():
 
 
 def test_benchmark_models_shape_and_winner():
+    pytest.importorskip("scipy", reason="GARCH MLE requires scipy (install 'quantlab[ml]')")
     r = _clustered_returns(n=750)
     out = benchmark_models(r)
     models = {"historical", "ewma", "realized", "har", "garch", "egarch", "gjr"}

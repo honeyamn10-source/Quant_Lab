@@ -50,6 +50,7 @@ dev = [
     "mypy>=1.8",
     "types-PyYAML>=6.0",
     "build>=1.0",
+    "scipy>=1.12",
 ]
 
 [project.scripts]

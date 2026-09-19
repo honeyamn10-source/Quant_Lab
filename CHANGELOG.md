@@ -61,9 +61,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CI typecheck job installs the full dev extras (mypy needs PyYAML type stubs);
   lint now covers `benchmarks/`.
 - `build>=1.0` added to dev extras so the Makefile `build` target works.
-- `.gitignore` now honors the documented contract that `datasets/*.json` raw
-  files stay out of git; `regimes` CLI docstring no longer advertises a
-  nonexistent `--symbol` flag.
+- `scipy` added to dev extras and GARCH tests skip cleanly without it: the dev
+  environment now covers the full test suite (CI was failing on the two GARCH
+  tests because scipy lives only in the optional `ml` extra).
 - `quantlab data generate-synthetic --process pairs` now writes the cointegrated
   pair instead of failing on an unknown process; CLI surface tests added.
 - Makefile `test`/`test-all` run the full suite; `test-lookahead` uses the
