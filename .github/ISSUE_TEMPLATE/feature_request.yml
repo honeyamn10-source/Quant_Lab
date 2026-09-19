@@ -1,0 +1,42 @@
+name: Feature or research-module request
+description: Request a new module, metric, validation or strategy
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Data integrity
+        - Backtest engine
+        - Statistical validation
+        - Execution model
+        - Regimes / volatility
+        - Sizing / risk
+        - Sentiment / events
+        - Graveyard / reports
+        - CLI / API
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What hypothesis or failure mode does this address?
+    validations:
+      required: true
+  - type: textarea
+    id: contract
+    attributes:
+      label: Proposed interface
+      description: Sketch the public functions/classes and their inputs/outputs.
+  - type: checkboxes
+    id: standards
+    attributes:
+      label: Standards
+      options:
+        - label: Will include tests (known-answer, property-based, or synthetic)
+        - label: Will update docs/
+        - label: Adds no dependency to the core unless behind an optional extra
+    validations:
+      required: true

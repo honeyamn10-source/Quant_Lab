@@ -1,0 +1,92 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "quantlab"
+version = "0.1.0"
+description = "An open quantitative research and strategy-falsification platform for detecting backtest overfitting, data leakage, execution assumptions, regime dependency and fragile trading strategies."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+keywords = ["quantitative-finance", "backtesting", "overfitting", "research", "strategy", "trading"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Office/Business :: Financial :: Investment",
+    "Topic :: Scientific/Engineering",
+]
+
+dependencies = [
+    "numpy>=1.26",
+    "pydantic>=2.6",
+    "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+# Heavy statistical / modelling stack (spec recommends Python 3.12+, arch, scikit-learn...)
+ml = [
+    "scipy>=1.12",
+    "scikit-learn>=1.4",
+    "statsmodels>=0.14",
+    "arch>=6.0",
+    "optuna>=3.6",
+]
+# Experiment tracking
+tracking = ["mlflow>=2.10"]
+# Data-frame storage layer (DuckDB queries Parquet directly)
+storage = ["pandas>=2.2", "polars>=1.0", "duckdb>=1.0", "pyarrow>=16.0"]
+# Web dashboard / API
+web = ["fastapi>=0.110", "uvicorn>=0.29", "jinja2>=3.1", "plotly>=5.20"]
+# Development
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=4.1",
+    "hypothesis>=6.100",
+    "ruff>=0.4",
+    "mypy>=1.8",
+]
+
+[project.scripts]
+quantlab = "quantlab.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["quantlab"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["quantlab", "tests", "examples"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "C4", "S", "N"]
+ignore = ["E501", "S101"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]
+"quantlab/cli.py" = ["S101", "N802"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = false
+warn_unused_configs = true
+check_untyped_defs = true
+disable_error_code = ["import-untyped", "attr-defined"]
+exclude = ["docs", "examples", "tests"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra -q --strict-markers"
+markers = [
+    "lookahead: tests that deliberately leak information to prove detection works",
+    "synthetic: tests run on generated markets with known ground truth",
+    "statistical: distributional/statistical validation tests",
+    "slow: long-running tests",
+]
+
+[tool.coverage.run]
+source = ["quantlab"]
+branch = true

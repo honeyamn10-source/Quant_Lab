@@ -1,0 +1,30 @@
+name: Bug report
+description: File a reproducible bug report
+title: "[BUG]: "
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproduction
+      description: Include the exact config YAML/JSON, seed and commands.
+      render: shell
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Quant Lab version / git commit
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Did this affect any experiment in the ledger?
+      description: If yes, include the experiment_id.

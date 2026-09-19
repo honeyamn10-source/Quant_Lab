@@ -1,0 +1,22 @@
+name: sma_crossover_on_random_walk
+strategy: sma_crossover
+strategy_params:
+  fast: 10
+  slow: 30
+data:
+  symbols: ["SYN"]
+  process: random_walk
+  n_bars: 504
+  seed: 7
+initial_cash: 1000000.0
+execution_delay: 1
+execution_mode: next_open
+profile: normal
+max_leverage: 2.0
+max_position_weight: 1.0
+rebalance_tolerance: 0.005
+commission_bps: 5.0
+participation_cap: 0.10
+borrow_rate_year: 0.0
+seed: 0
+notes: "Baseline: SMA cross on a pure random walk. Expect near-zero edge and an honest report — not 'alpha'."

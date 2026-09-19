@@ -1,0 +1,24 @@
+name: pairs_market_truth
+strategy: pairs
+strategy_params:
+  window: 40
+  z_enter: 1.5
+  z_exit: 0.4
+  leverage: 1.0
+data:
+  symbols: ["A", "B"]
+  process: pairs
+  n_bars: 504
+  seed: 13
+initial_cash: 1000000.0
+execution_delay: 1
+execution_mode: next_open
+profile: normal
+max_leverage: 3.0
+max_position_weight: 1.0
+rebalance_tolerance: 0.005
+commission_bps: 5.0
+participation_cap: 0.10
+borrow_rate_year: 0.0
+seed: 0
+notes: "Pairs on the cointegrated synthetic pair — the hypothesis is literally true here, so a healthy platform SHOULD show it (else the engine is broken)."

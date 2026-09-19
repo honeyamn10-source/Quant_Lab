@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use Quant Lab in research, please cite it as follows."
+title: "Quant Lab"
+abstract: >-
+  An open quantitative research and strategy-falsification platform for detecting
+  backtest overfitting, data leakage, execution assumptions, regime dependency
+  and fragile trading strategies.
+authors:
+  - family-names: "Honey"
+    given-names: ""
+    email: "honeyamn10@gmail.com"
+date-released: "2026-09-19"
+keywords:
+  - quantitative-finance
+  - backtesting
+  - overfitting
+  - research
+license: "MIT"
+repository-code: "https://github.com/honeyamn10-source/Quant_Lab"

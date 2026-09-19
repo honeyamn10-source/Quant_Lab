@@ -1,0 +1,22 @@
+name: momentum_on_trend
+strategy: momentum
+strategy_params:
+  lookback: 20
+  threshold: 0.0
+data:
+  symbols: ["SYN"]
+  process: trend
+  n_bars: 504
+  seed: 9
+initial_cash: 1000000.0
+execution_delay: 1
+execution_mode: next_open
+profile: normal
+max_leverage: 2.0
+max_position_weight: 1.0
+rebalance_tolerance: 0.005
+commission_bps: 5.0
+participation_cap: 0.10
+borrow_rate_year: 0.0
+seed: 0
+notes: "Momentum in a synthetic trending market. Uses only information available at decision time."

@@ -1,0 +1,21 @@
+name: random_signals_canary
+strategy: random
+strategy_params:
+  seed: 99
+data:
+  symbols: ["SYN"]
+  process: random_walk
+  n_bars: 504
+  seed: 21
+initial_cash: 1000000.0
+execution_delay: 1
+execution_mode: next_open
+profile: normal
+max_leverage: 2.0
+max_position_weight: 1.0
+rebalance_tolerance: 0.005
+commission_bps: 5.0
+participation_cap: 0.10
+borrow_rate_year: 0.0
+seed: 0
+notes: "Canary run. Randomized signals must NOT print a spectacular Sharpe; if they do, the research pipeline has a bug."
