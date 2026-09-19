@@ -23,7 +23,9 @@ def scaled_params(base: dict, scales: list[float]) -> list[dict]:
     """
     variants = []
     for scale in scales:
-        variant = {key: (value * scale if _is_numeric(value) else value) for key, value in base.items()}
+        variant = {
+            key: (value * scale if _is_numeric(value) else value) for key, value in base.items()
+        }
         variant["perturbation"] = {"scale": float(scale)}
         variants.append(variant)
     return variants
@@ -38,7 +40,9 @@ def _round_int_keys(variant: dict, base: dict) -> dict:
     return fixed
 
 
-def param_perturbation_sweep(run_fn, base_params: dict, factors: list[float] | None = None) -> list[dict]:
+def param_perturbation_sweep(
+    run_fn, base_params: dict, factors: list[float] | None = None
+) -> list[dict]:
     """Sweep every numeric strategy parameter at once across ``factors``.
 
     Defaults to ``[0.8, 0.9, 1.0, 1.1, 1.2]``. Each run passes
@@ -61,7 +65,10 @@ def cost_perturbation_sweep(run_fn, cost_factors: list[float] | None = None) -> 
     """
     cost_factors = cost_factors if cost_factors is not None else [1.0, 1.5, 2.0, 3.0]
     return [
-        {"factor": factor, "result": run_fn({"commission_bps": 5.0 * factor, "spread_factor": factor})}
+        {
+            "factor": factor,
+            "result": run_fn({"commission_bps": 5.0 * factor, "spread_factor": factor}),
+        }
         for factor in cost_factors
     ]
 
@@ -97,7 +104,11 @@ def random_start(run_fn, n_tries: int = 20, seed: int = 0) -> list[dict]:
     """
     rng = np.random.default_rng(seed)
     entries = [
-        {"start_offset": int(k), "shuffled_universe": False, "result": run_fn({"start_offset": int(k)})}
+        {
+            "start_offset": int(k),
+            "shuffled_universe": False,
+            "result": run_fn({"start_offset": int(k)}),
+        }
         for k in range(n_tries)
     ]
     n_shuffled = max(0, n_tries // 5)
@@ -105,7 +116,11 @@ def random_start(run_fn, n_tries: int = 20, seed: int = 0) -> list[dict]:
         for k in rng.choice(n_tries, size=n_shuffled, replace=False):
             k = int(k)
             entries.append(
-                {"start_offset": k, "shuffled_universe": True, "result": run_fn({"start_offset": k, "universe": "shuffled"})}
+                {
+                    "start_offset": k,
+                    "shuffled_universe": True,
+                    "result": run_fn({"start_offset": k, "universe": "shuffled"}),
+                }
             )
     return entries
 
@@ -117,7 +132,11 @@ def universe_variants(run_fn, base_universe: list[str], alternatives: dict) -> l
     ``{"label": label, "universe": [...], "result": ...}``.
     """
     entries = [
-        {"label": "base", "universe": list(base_universe), "result": run_fn({"universe": list(base_universe)})}
+        {
+            "label": "base",
+            "universe": list(base_universe),
+            "result": run_fn({"universe": list(base_universe)}),
+        }
     ]
     entries.extend(
         {"label": label, "universe": list(universe), "result": run_fn({"universe": list(universe)})}

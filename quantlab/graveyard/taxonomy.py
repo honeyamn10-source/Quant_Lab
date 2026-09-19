@@ -11,6 +11,7 @@ from enum import Enum
 
 class FailureCategory(str, Enum):  # noqa: UP042
     """Curated set of documented strategy failure modes."""
+
     """Curated set of documented strategy failure modes."""
 
     OVERFIT = "overfit"

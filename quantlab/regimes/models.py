@@ -35,9 +35,7 @@ def _finite_returns(returns: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     return r[idx], idx
 
 
-def _map_states_by_moments(
-    labels: np.ndarray, returns: np.ndarray, state_count: int
-) -> np.ndarray:
+def _map_states_by_moments(labels: np.ndarray, returns: np.ndarray, state_count: int) -> np.ndarray:
     """Map raw state ids onto canonical regime ids via moment ordering."""
     r, valid = _finite_returns(returns)
     mapping = np.full(state_count, -1, dtype=np.int64)
@@ -194,9 +192,7 @@ def hmm_regimes(
         beta = np.zeros((t_len, k))
         beta[-1] = 1.0
         for t in range(t_len - 2, -1, -1):
-            beta[t] = (transition @ (emission[t + 1] * beta[t + 1])) / max(
-                scale[t + 1], _VAR_FLOOR
-            )
+            beta[t] = (transition @ (emission[t + 1] * beta[t + 1])) / max(scale[t + 1], _VAR_FLOOR)
 
         gamma = alpha * beta
         gamma = gamma / gamma.sum(axis=1, keepdims=True)
@@ -298,9 +294,7 @@ def change_point_regimes(
     return labels
 
 
-def ensemble_regimes(
-    returns: np.ndarray, features: dict[str, np.ndarray], seed: int = 0
-) -> dict:
+def ensemble_regimes(returns: np.ndarray, features: dict[str, np.ndarray], seed: int = 0) -> dict:
     """Blend the four regime detectors into one canonical-state ensemble.
 
     Every model's states are mapped onto the 4 canonical regimes via the
@@ -360,9 +354,7 @@ def ensemble_regimes(
         probabilities[valid_rows] = votes_matrix[valid_rows] / denom[:, None]
 
     row_totals = probabilities.sum(axis=1, keepdims=True)
-    probabilities = np.divide(
-        probabilities, np.where(row_totals > 0.0, row_totals, 1.0)
-    )
+    probabilities = np.divide(probabilities, np.where(row_totals > 0.0, row_totals, 1.0))
     ensemble_labels = np.argmax(np.nan_to_num(probabilities, nan=0.0), axis=1)
 
     dominant = probabilities.max(axis=1)

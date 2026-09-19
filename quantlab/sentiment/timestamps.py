@@ -51,7 +51,9 @@ class NewsItem(BaseModel):
     def _publication_not_before_event(cls, value: int, info) -> int:
         event_time = info.data.get("event_time")
         if event_time is not None and value < event_time:
-            raise ValueError(_field_chain_message("publication_time", value, "event_time", event_time))
+            raise ValueError(
+                _field_chain_message("publication_time", value, "event_time", event_time)
+            )
         return value
 
     @field_validator("retrieval_time")
@@ -69,7 +71,9 @@ class NewsItem(BaseModel):
     def _decision_not_before_retrieval(cls, value: int, info) -> int:
         retrieval_time = info.data.get("retrieval_time")
         if retrieval_time is not None and value < retrieval_time:
-            raise ValueError(_field_chain_message("decision_time", value, "retrieval_time", retrieval_time))
+            raise ValueError(
+                _field_chain_message("decision_time", value, "retrieval_time", retrieval_time)
+            )
         return value
 
 

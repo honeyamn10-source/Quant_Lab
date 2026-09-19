@@ -10,14 +10,12 @@ from quantlab.strategies.indicators import ema, rolling_std, rsi, sma, zscore
 def test_sma_known_answer() -> None:
     import pytest
 
-
     x = np.arange(1.0, 10.0)
     assert sma(x, 3)[-1] == pytest.approx(8.0)
 
 
 def test_ema_weights_expansion() -> None:
     import pytest
-
 
     x = np.array([1.0, 2.0, 3.0, 4.0])
     e = ema(x, 2)

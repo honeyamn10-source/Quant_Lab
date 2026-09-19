@@ -86,7 +86,11 @@ def _svg_equity_chart(equity: list[float], baseline: float) -> str:
     x0 = _PAD
     xn = _PAD + inner_w
     line_d = "M " + " L ".join(line_cmds)
-    area_d = f"M {x0:.2f} {y_baseline:.2f} L " + " L ".join(line_cmds) + f" L {xn:.2f} {y_baseline:.2f} Z"
+    area_d = (
+        f"M {x0:.2f} {y_baseline:.2f} L "
+        + " L ".join(line_cmds)
+        + f" L {xn:.2f} {y_baseline:.2f} Z"
+    )
     return (
         f'<svg viewBox="0 0 {_WIDTH} {_HEIGHT}" width="{_WIDTH}" height="{_HEIGHT}" '
         'xmlns="http://www.w3.org/2000/svg" role="img" aria-label="equity curve">'
@@ -108,10 +112,7 @@ def _metrics_table(returns) -> str:
 
 
 def _metric_row(label: str, value: Any, note: str) -> str:
-    return (
-        f"<tr><th>{_esc(label)}</th><td>{_fmt_num(value)}</td>"
-        f"<td>{_esc(note)}</td></tr>"
-    )
+    return f"<tr><th>{_esc(label)}</th><td>{_fmt_num(value)}</td><td>{_esc(note)}</td></tr>"
 
 
 def _validation_section(validation: dict | None) -> str:
@@ -170,6 +171,37 @@ def _concerns_section(concerns: list[str]) -> str:
     return f"<section><h2>Concerns</h2>{body}</section>"
 
 
+class ReportResult:
+    """Thin adapter exposing a dict-style result payload to the HTML renderer.
+
+    Ledger records and ``results.json`` files store the backtest output as
+    plain JSON; ``render_html_report`` needs an object with ``returns``,
+    a ``config`` carrying ``initial_cash`` and an ``equity()`` method, so this
+    class bridges the two shapes.
+    """
+
+    def __init__(self, payload: dict) -> None:
+        self.returns: Any = payload.get("returns", [])
+        self.equity_curve: Any = payload.get("equity_curve", [])
+        self.signals: Any = payload.get("signals", [])
+        self.fills: Any = payload.get("fills", [])
+        self.orders: Any = payload.get("orders", [])
+        self.rejects: Any = payload.get("rejects", [])
+        self.config: Any = type(
+            "Config",
+            (),
+            {"initial_cash": (payload.get("config") or {}).get("initial_cash", 1_000_000.0)},
+        )()
+
+    def equity(self) -> list[float]:
+        curve = self.equity_curve
+        if not curve:
+            return []
+        if isinstance(curve[0], (list, tuple)):
+            return [float(value) for _, value in curve]
+        return [float(value) for value in curve]
+
+
 def render_html_report(
     result,
     validation: dict | None = None,
@@ -202,12 +234,16 @@ def render_html_report(
         "</header>"
     )
     metrics = f"<section><h2>Performance Metrics</h2>{_metrics_table(result.returns)}</section>"
-    validation_section = f"<section><h2>Validation Battery</h2>{_validation_section(validation)}</section>"
-    equity_section = f"<section><h2>Equity Curve</h2>{_svg_equity_chart(equity, baseline)}</section>"
+    validation_section = (
+        f"<section><h2>Validation Battery</h2>{_validation_section(validation)}</section>"
+    )
+    equity_section = (
+        f"<section><h2>Equity Curve</h2>{_svg_equity_chart(equity, baseline)}</section>"
+    )
     concerns_html = _concerns_section(concerns)
     footer = "<footer>Generated with Quant Lab reports. Falsify, do not prove.</footer>"
     return (
-        "<!doctype html><html><head><meta charset=\"utf-8\">"
+        '<!doctype html><html><head><meta charset="utf-8">'
         f"<title>{_esc(title)}</title><style>{_CSS}</style></head><body>"
         f"{header}{metrics}{validation_section}{equity_section}{concerns_html}{footer}"
         "</body></html>"
@@ -216,6 +252,7 @@ def render_html_report(
 
 def render_graveyard_html(entries: list[dict]) -> str:
     """Render a simple table of failed experiments for the graveyard page."""
+
     def cell(value: Any) -> str:
         return _esc("-" if value is None else value)
 
@@ -233,12 +270,9 @@ def render_graveyard_html(entries: list[dict]) -> str:
         "<thead><tr><th>id</th><th>status</th><th>primary_failure</th>"
         "<th>raw_sharpe</th><th>net_sharpe</th></tr></thead>"
     )
-    body = (
-        "<h1>QUANT LAB EXPERIMENT GRAVEYARD</h1>"
-        f"<table>{thead}<tbody>{rows}</tbody></table>"
-    )
+    body = f"<h1>QUANT LAB EXPERIMENT GRAVEYARD</h1><table>{thead}<tbody>{rows}</tbody></table>"
     return (
-        "<!doctype html><html><head><meta charset=\"utf-8\">"
+        '<!doctype html><html><head><meta charset="utf-8">'
         "<title>Quant Lab Graveyard</title>"
         f"<style>{_CSS}</style></head><body>{body}</body></html>"
     )

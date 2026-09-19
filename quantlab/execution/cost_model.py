@@ -30,23 +30,43 @@ class ExecutionProfile(BaseModel):
 
 PROFILES: dict[str, ExecutionProfile] = {
     "optimistic": ExecutionProfile(
-        name="optimistic", spread_bps=0.5, slippage_bps=0.0, impact_bps=0.0,
-        latency_ms=0.0, commission_bps=1.0, fill_participation=0.25,
+        name="optimistic",
+        spread_bps=0.5,
+        slippage_bps=0.0,
+        impact_bps=0.0,
+        latency_ms=0.0,
+        commission_bps=1.0,
+        fill_participation=0.25,
         description="lower bound reference; never the production assessment",
     ),
     "normal": ExecutionProfile(
-        name="normal", spread_bps=2.0, slippage_bps=1.0, impact_bps=2.0,
-        latency_ms=50.0, commission_bps=5.0, fill_participation=0.10,
+        name="normal",
+        spread_bps=2.0,
+        slippage_bps=1.0,
+        impact_bps=2.0,
+        latency_ms=50.0,
+        commission_bps=5.0,
+        fill_participation=0.10,
         description="default conservative baseline",
     ),
     "stress": ExecutionProfile(
-        name="stress", spread_bps=6.0, slippage_bps=5.0, impact_bps=8.0,
-        latency_ms=250.0, commission_bps=8.0, fill_participation=0.05,
+        name="stress",
+        spread_bps=6.0,
+        slippage_bps=5.0,
+        impact_bps=8.0,
+        latency_ms=250.0,
+        commission_bps=8.0,
+        fill_participation=0.05,
         description="deteriorating market conditions",
     ),
     "extreme": ExecutionProfile(
-        name="extreme", spread_bps=20.0, slippage_bps=20.0, impact_bps=25.0,
-        latency_ms=1000.0, commission_bps=12.0, fill_participation=0.02,
+        name="extreme",
+        spread_bps=20.0,
+        slippage_bps=20.0,
+        impact_bps=25.0,
+        latency_ms=1000.0,
+        commission_bps=12.0,
+        fill_participation=0.02,
         description="crisis / illiquid conditions",
     ),
 }
@@ -70,7 +90,14 @@ class CostBreakdown:
 
     @property
     def total(self) -> float:
-        return self.spread + self.slippage + self.impact + self.commission + self.financing + self.borrow
+        return (
+            self.spread
+            + self.slippage
+            + self.impact
+            + self.commission
+            + self.financing
+            + self.borrow
+        )
 
     def to_dict(self) -> dict:
         return {
@@ -91,7 +118,9 @@ class ExecutionCostModel:
         impact_bps · sqrt(participation)  where participation = size / ADV
     """
 
-    def __init__(self, profile_name: str | ExecutionProfile = "normal", adv_liquidity: float = 1e7) -> None:
+    def __init__(
+        self, profile_name: str | ExecutionProfile = "normal", adv_liquidity: float = 1e7
+    ) -> None:
         self.profile = get_profile(profile_name) if isinstance(profile_name, str) else profile_name
         self.adv = float(adv_liquidity)
 
@@ -103,24 +132,34 @@ class ExecutionCostModel:
 
     def cost_per_unit_notional(self, order_notional: float, holding_bars: int = 1) -> CostBreakdown:
         """One-way cost, in fractions of order notional."""
-        half_spread = self.profile.spread_bps / 10_000.0 / 2.0 + self.profile.slippage_bps / 10_000.0
+        half_spread = (
+            self.profile.spread_bps / 10_000.0 / 2.0 + self.profile.slippage_bps / 10_000.0
+        )
         impact = self._impact(order_notional)
         commission = self.profile.commission_bps / 10_000.0
-        financing = self.profile.borrow_rate_year / 252.0 * holding_bars if self.profile.borrow_rate_year > 0 else 0.0
+        financing = (
+            self.profile.borrow_rate_year / 252.0 * holding_bars
+            if self.profile.borrow_rate_year > 0
+            else 0.0
+        )
         return CostBreakdown(
             spread=half_spread,
             slippage=self.profile.slippage_bps / 10_000.0,
             impact=impact,
             commission=commission,
             financing=financing,
-            borrow=self.profile.borrow_rate_year / 252.0 if self.profile.borrow_rate_year > 0 else 0.0,
+            borrow=self.profile.borrow_rate_year / 252.0
+            if self.profile.borrow_rate_year > 0
+            else 0.0,
         )
 
     def round_trip_cost(self, order_notional: float) -> float:
         one_way = self.cost_per_unit_notional(order_notional)
         return 2.0 * (one_way.spread + one_way.slippage + one_way.commission) + one_way.impact
 
-    def capacity(self, net_annual_return: float, order_notional: float, turnover_x: float = 20.0) -> float:
+    def capacity(
+        self, net_annual_return: float, order_notional: float, turnover_x: float = 20.0
+    ) -> float:
         """Estimate the capital at which trading costs consume the gross return."""
         if net_annual_return <= 0:
             return 0.0

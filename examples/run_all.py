@@ -25,7 +25,16 @@ def main_cli() -> int:
     for cfg in sorted(STRATEGIES_DIR.glob("*.yaml")):
         print(f"\n=== {cfg.name} ===")
         try:
-            rc = main(["run-experiment", str(cfg), "--ledger", args.ledger, "--report-dir", args.report_dir])
+            rc = main(
+                [
+                    "run-experiment",
+                    str(cfg),
+                    "--ledger",
+                    args.ledger,
+                    "--report-dir",
+                    args.report_dir,
+                ]
+            )
             failed += rc
         except SystemExit as exc:
             failed += 1

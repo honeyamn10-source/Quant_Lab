@@ -45,7 +45,9 @@ class RandomStrategy(Strategy):
         target = self._positions[i]
         if target == 0.0:
             return None
-        return [Signal(symbol=sym, target_weight=target, ts=streams[sym].bars[i].ts, reason="random")]
+        return [
+            Signal(symbol=sym, target_weight=target, ts=streams[sym].bars[i].ts, reason="random")
+        ]
 
 
 class SmaCrossover(Strategy):
@@ -66,8 +68,15 @@ class SmaCrossover(Strategy):
         if math.isnan(fast[-1]) or math.isnan(slow[-1]):
             return None
         w = 1.0 if fast[-1] > slow[-1] else -1.0
-        return [Signal(symbol=sym, target_weight=w, ts=streams[sym].bars[i].ts,
-                       reason="sma_cross", params={"fast": fast[-1], "slow": slow[-1]})]
+        return [
+            Signal(
+                symbol=sym,
+                target_weight=w,
+                ts=streams[sym].bars[i].ts,
+                reason="sma_cross",
+                params={"fast": fast[-1], "slow": slow[-1]},
+            )
+        ]
 
 
 class Momentum(Strategy):
@@ -94,8 +103,15 @@ class Momentum(Strategy):
             w = -1.0
         else:
             return None
-        return [Signal(symbol=sym, target_weight=w, ts=streams[sym].bars[i].ts,
-                       reason="momentum", params={"ret": ret})]
+        return [
+            Signal(
+                symbol=sym,
+                target_weight=w,
+                ts=streams[sym].bars[i].ts,
+                reason="momentum",
+                params={"ret": ret},
+            )
+        ]
 
 
 class MeanReversion(Strategy):
@@ -123,8 +139,15 @@ class MeanReversion(Strategy):
             w = 0.0
         else:  # between entry and exit bands: hold what we have
             return None
-        return [Signal(symbol=sym, target_weight=w, ts=streams[sym].bars[i].ts,
-                       reason="mean_revert", params={"z": z[-1]})]
+        return [
+            Signal(
+                symbol=sym,
+                target_weight=w,
+                ts=streams[sym].bars[i].ts,
+                reason="mean_revert",
+                params={"z": z[-1]},
+            )
+        ]
 
 
 class Breakout(Strategy):
@@ -152,9 +175,18 @@ class Breakout(Strategy):
             w = -1.0
         else:
             return None
-        return [Signal(symbol=sym, target_weight=w, ts=streams[sym].bars[i].ts,
-                       reason="breakout", params={"high_band": float(np.max(highs[-lb:-1])),
-                                                   "low_band": float(np.min(lows[-lb:-1]))})]
+        return [
+            Signal(
+                symbol=sym,
+                target_weight=w,
+                ts=streams[sym].bars[i].ts,
+                reason="breakout",
+                params={
+                    "high_band": float(np.max(highs[-lb:-1])),
+                    "low_band": float(np.min(lows[-lb:-1])),
+                },
+            )
+        ]
 
 
 class VolTarget(Strategy):
@@ -176,8 +208,15 @@ class VolTarget(Strategy):
         target = float(self.params["target_vol"])
         cap = float(self.params["max_weight"])
         w = min(cap, target / real_vol) if real_vol and real_vol > 0 else 0.0
-        return [Signal(symbol=sym, target_weight=w, ts=streams[sym].bars[i].ts,
-                       reason="vol_target", params={"realized": real_vol})]
+        return [
+            Signal(
+                symbol=sym,
+                target_weight=w,
+                ts=streams[sym].bars[i].ts,
+                reason="vol_target",
+                params={"realized": real_vol},
+            )
+        ]
 
 
 class MeanReversionRSI(Strategy):
@@ -202,8 +241,15 @@ class MeanReversionRSI(Strategy):
             w = -1.0
         else:
             return None
-        return [Signal(symbol=sym, target_weight=w, ts=streams[sym].bars[i].ts,
-                       reason="rsi_fade", params={"rsi": r[-1]})]
+        return [
+            Signal(
+                symbol=sym,
+                target_weight=w,
+                ts=streams[sym].bars[i].ts,
+                reason="rsi_fade",
+                params={"rsi": r[-1]},
+            )
+        ]
 
 
 ALL_STRATEGIES: dict[str, type[Strategy]] = {

@@ -73,24 +73,24 @@ def test_fills_only_after_signal_bar() -> None:
 
 def test_orders_rejected_on_unknown_symbol() -> None:
     data = generate("mean_reversion", n=100, seed=3)
-    result = BacktestEngine(BacktestConfig(max_leverage=0.5)).run(
-        BuyAndHold(), {data.symbol: data}
-    )
+    result = BacktestEngine(BacktestConfig(max_leverage=0.5)).run(BuyAndHold(), {data.symbol: data})
     # leverage cap 0.5 with a full-weight long will produce rejections or limits
     assert result.equity()  # engine still yields a valid curve
 
 
 def test_leverage_cap_limits_gross() -> None:
     data = generate("random_walk", n=100, seed=4)
-    result = BacktestEngine(BacktestConfig(max_leverage=1.0)).run(
-        BuyAndHold(), {data.symbol: data}
-    )
+    result = BacktestEngine(BacktestConfig(max_leverage=1.0)).run(BuyAndHold(), {data.symbol: data})
     for evt in result.portfolio_events:
         assert evt.leverage <= 1.01
 
 
 def test_spread_increases_cost_reduces_return() -> None:
     data = generate("trend", n=252, seed=8)
-    cheap = BacktestEngine(BacktestConfig(profile="optimistic")).run(BuyAndHold(), {data.symbol: data})
-    pricey = BacktestEngine(BacktestConfig(profile="extreme", participation_cap=0.02)).run(BuyAndHold(), {data.symbol: data})
+    cheap = BacktestEngine(BacktestConfig(profile="optimistic")).run(
+        BuyAndHold(), {data.symbol: data}
+    )
+    pricey = BacktestEngine(BacktestConfig(profile="extreme", participation_cap=0.02)).run(
+        BuyAndHold(), {data.symbol: data}
+    )
     assert pricey.final_equity() <= cheap.final_equity() * 1.0001

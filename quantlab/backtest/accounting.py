@@ -35,10 +35,16 @@ class Portfolio:
         return self.positions.get(symbol, Position()).quantity
 
     def gross_notional(self, prices: dict[str, float]) -> float:
-        return sum(abs(p.quantity) * prices.get(sym, p.avg_price) for sym, p in self.positions.items())
+        return sum(
+            abs(p.quantity) * prices.get(sym, p.avg_price) for sym, p in self.positions.items()
+        )
 
     def short_notional(self, prices: dict[str, float]) -> float:
-        return sum(abs(p.quantity) * prices.get(sym, p.avg_price) for sym, p in self.positions.items() if p.quantity < 0)
+        return sum(
+            abs(p.quantity) * prices.get(sym, p.avg_price)
+            for sym, p in self.positions.items()
+            if p.quantity < 0
+        )
 
     def equity_at(self, prices: dict[str, float]) -> float:
         mv = sum(p.quantity * prices.get(sym, p.avg_price) for sym, p in self.positions.items())
@@ -103,8 +109,11 @@ class Portfolio:
             max_qty = min(max_qty, max(bound_same, bound_flip))
         if self.max_leverage >= 0:
             margin = self.max_leverage + self._WEIGHT_EPSILON
-            other_gross = sum(abs(p.quantity) * (price if s == symbol else p.avg_price)
-                              for s, p in self.positions.items() if s != symbol)
+            other_gross = sum(
+                abs(p.quantity) * (price if s == symbol else p.avg_price)
+                for s, p in self.positions.items()
+                if s != symbol
+            )
             max_qty = min(max_qty, (margin * equity - other_gross) / price)
         return sign * max(max_qty, 0.0)
 
@@ -115,10 +124,14 @@ class Portfolio:
             return
         w = abs(projected_qty) * price / equity if equity > 0 else float("inf")
         if self.max_position_weight >= 0 and w > self.max_position_weight + self._WEIGHT_EPSILON:
-            raise AccountingError(f"position weight {w:.2%} exceeds limit {self.max_position_weight:.2%}")
+            raise AccountingError(
+                f"position weight {w:.2%} exceeds limit {self.max_position_weight:.2%}"
+            )
         gross = self.gross_notional({symbol: price}) + abs(signed_qty) * price
         if equity > 0 and gross / equity > self.max_leverage + self._WEIGHT_EPSILON:
-            raise AccountingError(f"leverage {gross / equity:.2f}x exceeds limit {self.max_leverage}x")
+            raise AccountingError(
+                f"leverage {gross / equity:.2f}x exceeds limit {self.max_leverage}x"
+            )
 
     def dividends(self, symbol: str, per_share: float) -> None:
         self.cash += self.qty(symbol) * per_share

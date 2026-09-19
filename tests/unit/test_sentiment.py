@@ -158,8 +158,12 @@ def test_leaked_study_inflates_returns() -> None:
 
 def test_availability_lag_profile_statistics() -> None:
     items = [
-        NewsItem(event_time=0, publication_time=10, retrieval_time=20, decision_time=30, headline="a"),
-        NewsItem(event_time=5, publication_time=15, retrieval_time=25, decision_time=35, headline="b"),
+        NewsItem(
+            event_time=0, publication_time=10, retrieval_time=20, decision_time=30, headline="a"
+        ),
+        NewsItem(
+            event_time=5, publication_time=15, retrieval_time=25, decision_time=35, headline="b"
+        ),
     ]
     profile = availability_lag_profile(items)
     assert profile["count"] == 2

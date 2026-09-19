@@ -5,7 +5,9 @@ from __future__ import annotations
 from collections.abc import Iterator
 
 
-def walk_forward_folds(n: int, train_size: int, test_size: int, step: int | None = None) -> Iterator[tuple[tuple[int, int], tuple[int, int]]]:
+def walk_forward_folds(
+    n: int, train_size: int, test_size: int, step: int | None = None
+) -> Iterator[tuple[tuple[int, int], tuple[int, int]]]:
     """Yield ((train_lo, train_hi), (test_lo, test_hi)) slices.
 
     Walks the fixed train window forward by `test_size` each step.
@@ -24,7 +26,9 @@ def walk_forward_folds_split(train_size: int, test_size: int, step: int | None =
     step = step or test_size
 
 
-def walk_forward_evaluate(n: int, run_fn, train_size: int, test_size: int, step: int | None = None, **kwargs) -> dict:
+def walk_forward_evaluate(
+    n: int, run_fn, train_size: int, test_size: int, step: int | None = None, **kwargs
+) -> dict:
     """Evaluate `run_fn(train_slice, test_slice)` over walk-forward folds."""
     folds = []
     for train, test in walk_forward_folds(n, train_size, test_size, step):

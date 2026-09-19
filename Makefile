@@ -1,4 +1,4 @@
-.PHONY: install dev lint typecheck test test-lookahead cov build docker-up clean
+.PHONY: install dev lint format typecheck test test-all test-lookahead cov build docker-up clean
 
 install:
 	pip install -e .
@@ -7,17 +7,17 @@ dev:
 	pip install -e ".[dev]"
 
 lint:
-	ruff check quantlab tests examples
+	ruff check quantlab tests examples benchmarks
 
 format:
-	ruff check --fix quantlab tests examples
-	ruff format quantlab tests examples
+	ruff check --fix quantlab tests examples benchmarks
+	ruff format quantlab tests examples benchmarks
 
 typecheck:
 	mypy quantlab
 
 test:
-	pytest tests/unit tests/statistical
+	pytest
 
 test-all:
 	pytest

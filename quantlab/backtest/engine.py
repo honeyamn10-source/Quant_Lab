@@ -108,7 +108,10 @@ class BacktestEngine:
 
     @staticmethod
     def _to_streams(data: Mapping[str, BarSeries | BarStream]) -> dict[str, BarStream]:
-        return {symbol: (src if isinstance(src, BarStream) else BarStream(src, symbol)) for symbol, src in data.items()}
+        return {
+            symbol: (src if isinstance(src, BarStream) else BarStream(src, symbol))
+            for symbol, src in data.items()
+        }
 
     def _latency_bars(self, bar_interval_ms: int) -> int:
         return int(math.ceil(max(0.0, self.config.latency_ms) / max(bar_interval_ms, 1)))
@@ -141,7 +144,11 @@ class BacktestEngine:
         order_id = 0
         prev_equity = float(self.config.initial_cash)
         first_streams = next(iter(streams.values()), None)
-        interval_ms = first_streams.bars[0].interval_seconds * 1000 if first_streams and first_streams.bars else 86_400_000
+        interval_ms = (
+            first_streams.bars[0].interval_seconds * 1000
+            if first_streams and first_streams.bars
+            else 86_400_000
+        )
         extra_bars = self._latency_bars(interval_ms)
 
         for i in range(n):
@@ -170,7 +177,9 @@ class BacktestEngine:
                 try:
                     # Clamp at the portfolio's position/leverage boundary (price drift
                     # between signal and fill can overshoot the target), then re-check.
-                    allowed = portfolio.clamp_fill(order.symbol, fill.quantity, fill.price, prev_equity)
+                    allowed = portfolio.clamp_fill(
+                        order.symbol, fill.quantity, fill.price, prev_equity
+                    )
                     if allowed == 0:
                         raise AccountingError(
                             f"position weight/leverage exceeded with zero clamp headroom for {order.symbol}"
@@ -178,13 +187,27 @@ class BacktestEngine:
                     portfolio.assert_limits(order.symbol, allowed, fill.price, prev_equity)
                     portfolio.apply_fill(order.symbol, allowed, fill.price)
                 except AccountingError as exc:
-                    result.rejects.append(RejectEvent(ts=bar.ts, bar_index=i, order_id=order.order_id, symbol=order.symbol, reason=exc.reason))
+                    result.rejects.append(
+                        RejectEvent(
+                            ts=bar.ts,
+                            bar_index=i,
+                            order_id=order.order_id,
+                            symbol=order.symbol,
+                            reason=exc.reason,
+                        )
+                    )
                     result.events.append(result.rejects[-1])
                     continue
                 fill_event = FillEvent(
-                    ts=bar.ts, bar_index=i, order_id=order.order_id, symbol=order.symbol,
-                    quantity=allowed, price=fill.price, commission=fill.commission,
-                    requested=order.quantity, partial=fill.partial or abs(allowed) < abs(order.quantity) - 1e-12,
+                    ts=bar.ts,
+                    bar_index=i,
+                    order_id=order.order_id,
+                    symbol=order.symbol,
+                    quantity=allowed,
+                    price=fill.price,
+                    commission=fill.commission,
+                    requested=order.quantity,
+                    partial=fill.partial or abs(allowed) < abs(order.quantity) - 1e-12,
                 )
                 result.fills.append(fill_event)
                 result.events.append(fill_event)
@@ -193,10 +216,17 @@ class BacktestEngine:
                     if residual > 1e-12:
                         remaining.append(
                             OrderEvent(
-                                ts=order.ts, bar_index=order.bar_index, order_id=order.order_id,
-                                symbol=order.symbol, side=order.side, quantity=residual,
-                                kind=order.kind, limit_price=order.limit_price, stop_price=order.stop_price,
-                                eligible_from=order.eligible_from, order_ts=order.order_ts,
+                                ts=order.ts,
+                                bar_index=order.bar_index,
+                                order_id=order.order_id,
+                                symbol=order.symbol,
+                                side=order.side,
+                                quantity=residual,
+                                kind=order.kind,
+                                limit_price=order.limit_price,
+                                stop_price=order.stop_price,
+                                eligible_from=order.eligible_from,
+                                order_ts=order.order_ts,
                             )
                         )
             pending = remaining
@@ -206,17 +236,40 @@ class BacktestEngine:
             try:
                 strategy_out = strategy.on_bar(streams, i)
             except ValueError as exc:  # BarStream raises on future access
-                raise LookaheadError(f"strategy attempted future access at bar {i}: {exc}") from None
-            emitted = strategy_out if isinstance(strategy_out, list) else ([strategy_out] if strategy_out is not None else [])
+                raise LookaheadError(
+                    f"strategy attempted future access at bar {i}: {exc}"
+                ) from None
+            emitted = (
+                strategy_out
+                if isinstance(strategy_out, list)
+                else ([strategy_out] if strategy_out is not None else [])
+            )
             for sig in emitted:
                 if not isinstance(sig, Signal):
                     continue
                 sym, target = sig.symbol, float(sig.target_weight)
                 close = close_prices.get(sym)
                 if close is None:
-                    result.rejects.append(RejectEvent(ts=ts_i, bar_index=i, order_id=-1, symbol=sym, reason=f"unknown symbol {sym}"))
+                    result.rejects.append(
+                        RejectEvent(
+                            ts=ts_i,
+                            bar_index=i,
+                            order_id=-1,
+                            symbol=sym,
+                            reason=f"unknown symbol {sym}",
+                        )
+                    )
                     continue
-                result.signals.append(SignalEvent(ts=sig.ts, bar_index=i, symbol=sym, target_weight=target, reason=sig.reason, params=sig.params))
+                result.signals.append(
+                    SignalEvent(
+                        ts=sig.ts,
+                        bar_index=i,
+                        symbol=sym,
+                        target_weight=target,
+                        reason=sig.reason,
+                        params=sig.params,
+                    )
+                )
                 result.events.append(result.signals[-1])
                 desired_qty = target * curr_equity / close
                 # Net against position AND any unfilled pending orders for this
@@ -226,7 +279,8 @@ class BacktestEngine:
                 # the symbol's pending orders with a single net order.
                 open_qty = sum(
                     (o.quantity if o.side == OrderSide.BUY else -o.quantity)
-                    for o in pending if o.symbol == sym
+                    for o in pending
+                    if o.symbol == sym
                 )
                 committed = portfolio.qty(sym) + open_qty
                 delta = desired_qty - committed
@@ -239,9 +293,13 @@ class BacktestEngine:
                     continue
                 order_id += 1
                 order = OrderEvent(
-                    ts=sig.ts, bar_index=i, order_id=order_id, symbol=sym,
+                    ts=sig.ts,
+                    bar_index=i,
+                    order_id=order_id,
+                    symbol=sym,
                     side=OrderSide.BUY if delta > 0 else OrderSide.SELL,
-                    quantity=abs(delta), kind=OrderKind.MARKET,
+                    quantity=abs(delta),
+                    kind=OrderKind.MARKET,
                     eligible_from=i + 1 + self.config.execution_delay + extra_bars,
                     order_ts=sig.ts,
                 )
@@ -254,11 +312,16 @@ class BacktestEngine:
             if fin:
                 portfolio.cash -= fin
             eq = portfolio.equity_at(close_prices)
-            result.portfolio_events.append(PortfolioEvent(
-                ts=ts_i, bar_index=i, equity=eq, cash=portfolio.cash,
-                positions={s: p.quantity for s, p in portfolio.positions.items()},
-                leverage=portfolio.leverage_at(close_prices),
-            ))
+            result.portfolio_events.append(
+                PortfolioEvent(
+                    ts=ts_i,
+                    bar_index=i,
+                    equity=eq,
+                    cash=portfolio.cash,
+                    positions={s: p.quantity for s, p in portfolio.positions.items()},
+                    leverage=portfolio.leverage_at(close_prices),
+                )
+            )
             result.events.append(result.portfolio_events[-1])
             result.equity_curve.append((ts_i, eq))
             if len(result.returns) < len(result.equity_curve) - 1:

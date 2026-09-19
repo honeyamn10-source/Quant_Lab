@@ -58,9 +58,9 @@ def cscv_logits(matrix: np.ndarray, num_splits: int = 6) -> dict:
     for chosen in itertools.combinations(range(num_splits), num_splits // 2):
         is_block = np.concatenate([blocks[k] for k in chosen])
         oos_block = np.concatenate([blocks[k] for k in range(num_splits) if k not in chosen])
-        is_sr = _block_sharpe(is_block)          # higher = better
+        is_sr = _block_sharpe(is_block)  # higher = better
         oos_sr = _block_sharpe(oos_block)
-        is_best = int(np.argmax(is_sr))          # in-sample winner
+        is_best = int(np.argmax(is_sr))  # in-sample winner
         # 1-based OOS rank: 1 = top (best performer OOS), N = bottom (worst)
         r = int((oos_sr > oos_sr[is_best]).sum()) + 1
         oos_ranks.append(float(r))
@@ -89,8 +89,10 @@ def probability_of_backtest_overfitting(matrix: np.ndarray, num_splits: int = 6)
     out["min_logit"] = float(np.min(logits))
     out["max_logit"] = float(np.max(logits))
     out["interpretation"] = (
-        "ELEVATED OVERFIT RISK" if pbo > 0.5 else
-        "MODERATE OVERFIT RISK" if pbo > 0.2 else
-        "LOW OVERFIT RISK"
+        "ELEVATED OVERFIT RISK"
+        if pbo > 0.5
+        else "MODERATE OVERFIT RISK"
+        if pbo > 0.2
+        else "LOW OVERFIT RISK"
     )
     return out

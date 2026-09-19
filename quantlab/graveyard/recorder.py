@@ -75,7 +75,12 @@ class Graveyard:
                 return dict(record)
         raise KeyError(f"unknown graveyard entry {identifier}")
 
-    def search(self, status: str | None = None, category: str | None = None, symbols: list[str] | None = None) -> list[dict]:
+    def search(
+        self,
+        status: str | None = None,
+        category: str | None = None,
+        symbols: list[str] | None = None,
+    ) -> list[dict]:
         """Filter entries by status, failure category, and/or traded symbols."""
         wanted_symbols = set(symbols) if symbols else None
         out = []

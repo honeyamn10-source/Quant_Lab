@@ -20,6 +20,8 @@ def embargo_mask(n: int, test_start: int, test_end: int, embargo: int) -> np.nda
     return mask
 
 
-def apply_embargo(train_idx: np.ndarray, test_start: int, test_end: int, embargo: int, n: int) -> np.ndarray:
+def apply_embargo(
+    train_idx: np.ndarray, test_start: int, test_end: int, embargo: int, n: int
+) -> np.ndarray:
     mask = embargo_mask(n, test_start, test_end, embargo)
     return train_idx[mask[train_idx]]

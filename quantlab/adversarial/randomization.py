@@ -36,7 +36,10 @@ def _next_return(result, bar_index: int) -> float:
 def _signal_pairs(result) -> list[tuple[float, float]]:
     """(target_weight, next_return) for each signal that maps onto a return."""
     return [
-        (float(getattr(signal, "target_weight", 0.0)), _next_return(result, int(getattr(signal, "bar_index", 0))))
+        (
+            float(getattr(signal, "target_weight", 0.0)),
+            _next_return(result, int(getattr(signal, "bar_index", 0))),
+        )
         for signal in result.signals
     ]
 

@@ -38,7 +38,12 @@ def classify_failure(evidence: dict) -> list[FailureCategory]:
     categories: list[FailureCategory] = []
     dsr = evidence.get("dsr", 1.0)
     pbo = evidence.get("pbo", 0.0)
-    if isinstance(dsr, (int, float)) and dsr < _OVERFIT_DSR or isinstance(pbo, (int, float)) and pbo > _OVERFIT_PBO:
+    if (
+        isinstance(dsr, (int, float))
+        and dsr < _OVERFIT_DSR
+        or isinstance(pbo, (int, float))
+        and pbo > _OVERFIT_PBO
+    ):
         categories.append(FailureCategory.OVERFIT)
     if evidence.get("lookahead", False):
         categories.append(FailureCategory.LOOKAHEAD)

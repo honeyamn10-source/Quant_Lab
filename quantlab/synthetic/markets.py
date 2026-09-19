@@ -33,7 +33,13 @@ def _make_bars(symbol: str, closes: np.ndarray, start_ts: int = 0) -> BarSeries:
         gap = max(abs(close - prev_close) * 0.5, prev_close * 1e-4)
         high = max(close, prev_close) + gap * 0.35
         low = min(close, prev_close) - gap * 0.35
-        volume = float(abs(np.random.RandomState(int(abs(close) * 1e7) % 1_000_000).normal(2_000_000.0, 400_000.0)))
+        volume = float(
+            abs(
+                np.random.RandomState(int(abs(close) * 1e7) % 1_000_000).normal(
+                    2_000_000.0, 400_000.0
+                )
+            )
+        )
         bars.append(
             Bar(
                 symbol=symbol,
@@ -111,7 +117,9 @@ def aug_ret2(rng: np.random.Generator, prev_vol: float) -> float:
     return (prev_vol * rng.standard_normal()) ** 2
 
 
-def generate_pairs(n: int = 504, seed: int = 7, symbols: tuple[str, str] = ("A", "B")) -> tuple[BarSeries, BarSeries]:
+def generate_pairs(
+    n: int = 504, seed: int = 7, symbols: tuple[str, str] = ("A", "B")
+) -> tuple[BarSeries, BarSeries]:
     """Cointegrated pair: A random-walks, B = k*A + stationary residual."""
     rng = np.random.default_rng(seed)
     k, sigma_a, omega = 1.0, 0.12 / math.sqrt(252), 0.05 * math.sqrt(1 / 252)

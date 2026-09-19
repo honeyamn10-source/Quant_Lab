@@ -23,7 +23,9 @@ def _purged_test_folds(n: int, n_splits: int) -> list[tuple[int, int]]:
     return folds
 
 
-def purged_cv_indices(n: int, n_splits: int = 5, horizon: int = 5, embargo: int = 5) -> Iterator[tuple[np.ndarray, np.ndarray]]:
+def purged_cv_indices(
+    n: int, n_splits: int = 5, horizon: int = 5, embargo: int = 5
+) -> Iterator[tuple[np.ndarray, np.ndarray]]:
     """Yield (train_idx, test_idx) per fold.
 
     - test fold: contiguous block ``[lo, hi)``.
@@ -49,7 +51,9 @@ def purged_cv_indices(n: int, n_splits: int = 5, horizon: int = 5, embargo: int 
         yield train, all_idx[lo:hi]
 
 
-def purged_cv_evaluate(n: int, run_fn, n_splits: int = 5, horizon: int = 5, embargo: int = 5, **kwargs) -> dict:
+def purged_cv_evaluate(
+    n: int, run_fn, n_splits: int = 5, horizon: int = 5, embargo: int = 5, **kwargs
+) -> dict:
     """Run `run_fn(train_idx, test_idx)` per fold and aggregate metrics."""
     fold_results = []
     for train_idx, test_idx in purged_cv_indices(n, n_splits, horizon, embargo):

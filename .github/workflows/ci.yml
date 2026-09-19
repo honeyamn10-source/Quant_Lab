@@ -16,7 +16,7 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install ruff
-      - run: ruff check quantlab tests examples
+      - run: ruff check quantlab tests examples benchmarks
 
   typecheck:
     runs-on: ubuntu-latest
@@ -25,7 +25,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install mypy numpy pydantic
+      - run: pip install -e ".[dev]"
       - run: mypy quantlab
 
   test:

@@ -9,17 +9,25 @@ must profit when its hypothesis (cointegration) is literally true.
 from __future__ import annotations
 
 import numpy as np
+import pytest
 from quantlab.backtest.engine import BacktestConfig, BacktestEngine
 from quantlab.strategies.benchmark import BuyAndHold, RandomStrategy, VolTarget, create_strategy
 from quantlab.strategies.pairs import PairsSpread
 from quantlab.synthetic.markets import available_processes, generate, generate_pairs
 from quantlab.validation.metrics import sharpe_ratio, volatility
 
+pytestmark = pytest.mark.synthetic
+
 
 def test_generators_cover_spec() -> None:
     want = {
-        "random_walk", "trend", "mean_reversion", "vol_clustering",
-        "regime_switch", "structural_break", "jump",
+        "random_walk",
+        "trend",
+        "mean_reversion",
+        "vol_clustering",
+        "regime_switch",
+        "structural_break",
+        "jump",
     }
     assert want <= set(available_processes())
 
@@ -35,9 +43,7 @@ def test_generators_deterministic_per_seed() -> None:
 def test_random_strategy_sharpe_not_spectacular() -> None:
     """The canary: randomized signals must NOT discover several-SD alpha."""
     data = generate("random_walk", n=504, seed=1)
-    result = BacktestEngine(BacktestConfig()).run(
-        RandomStrategy({"seed": 3}), {data.symbol: data}
-    )
+    result = BacktestEngine(BacktestConfig()).run(RandomStrategy({"seed": 3}), {data.symbol: data})
     # randomization is costly: turnover-driven drag plus no information.
     assert sharpe_ratio(result.returns) < 1.0
 

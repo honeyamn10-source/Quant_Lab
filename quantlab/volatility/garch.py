@@ -91,9 +91,7 @@ def _jittered(base: np.ndarray, seed: int, scale: float = 0.05) -> np.ndarray:
 
 def _garch_start(e2: np.ndarray, p: int, q: int, seed: int) -> np.ndarray:
     base_var = _presample_var(e2)
-    base = np.concatenate(
-        [[base_var * 0.1], np.full(p, 0.09 / p), np.full(q, 0.81 / q)]
-    )
+    base = np.concatenate([[base_var * 0.1], np.full(p, 0.09 / p), np.full(q, 0.81 / q)])
     x0 = _jittered(base, seed)
     x0 = np.maximum(x0, 1e-9)
     persistence = float(np.sum(x0[1:]))
@@ -157,12 +155,7 @@ def _egarch_variance(params: np.ndarray, e: np.ndarray, n: int) -> np.ndarray:
         if t > 0:
             prev_s = math.sqrt(sigma2[t - 1])
             z = float(e[t - 1]) / prev_s if prev_s > 0 else 0.0
-            log_var = (
-                omega
-                + alpha * (abs(z) - _SQRT_TWO_OVER_PI)
-                + gamma * z
-                + beta * log_var
-            )
+            log_var = omega + alpha * (abs(z) - _SQRT_TWO_OVER_PI) + gamma * z + beta * log_var
         var = math.exp(min(log_var, 20.0))
         if var < _FLOOR:
             var = _FLOOR
@@ -325,7 +318,9 @@ def _fit_garch_arch(returns, p: int, q: int, seed: int, max_iter: int) -> dict:
     }
 
 
-def garch_family(model: str, returns, seed: int = 0, max_iter: int = 500, use_arch: bool = False, **kwargs) -> dict:
+def garch_family(
+    model: str, returns, seed: int = 0, max_iter: int = 500, use_arch: bool = False, **kwargs
+) -> dict:
     """Dispatch to a GARCH-family fit by name: ``garch``, ``egarch`` or ``gjr``.
 
     Returns the fit dict enriched with the deterministic (seed-dependent)

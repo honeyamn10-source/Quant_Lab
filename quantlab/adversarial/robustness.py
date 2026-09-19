@@ -82,7 +82,9 @@ def robustness_surface(sweeps: dict[str, list[dict]]) -> dict:
     rating (ROBUST / MODERATE / FRAGILE), the worst dimension and metric, the per
     dimension slopes and a full report table.
     """
-    table = [degradation_slope(results, dimension=dimension) for dimension, results in sweeps.items()]
+    table = [
+        degradation_slope(results, dimension=dimension) for dimension, results in sweeps.items()
+    ]
     slopes = {row["dimension"]: row["slope_per_1pct"] for row in table}
     worst = min(table, key=lambda row: row["worst_metric"], default=None)
     if worst is None:

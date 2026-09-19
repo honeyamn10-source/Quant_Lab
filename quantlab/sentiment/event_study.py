@@ -23,7 +23,10 @@ def _is_inflated(leaked_mean: float, delayed_mean: float) -> bool:
         return False
     if delayed_mean == 0.0:
         return True
-    return leaked_mean >= 2.0 * delayed_mean or (leaked_mean - delayed_mean) / abs(delayed_mean) >= 0.25
+    return (
+        leaked_mean >= 2.0 * delayed_mean
+        or (leaked_mean - delayed_mean) / abs(delayed_mean) >= 0.25
+    )
 
 
 def event_study(

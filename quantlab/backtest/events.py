@@ -59,7 +59,15 @@ class SignalEvent(Event):
     reason: str = ""
     params: dict = field(default_factory=dict)
 
-    def __init__(self, ts: int, bar_index: int, symbol: str, target_weight: float, reason: str = "", params: dict | None = None) -> None:
+    def __init__(
+        self,
+        ts: int,
+        bar_index: int,
+        symbol: str,
+        target_weight: float,
+        reason: str = "",
+        params: dict | None = None,
+    ) -> None:
         super().__init__(EventType.SIGNAL, ts, bar_index)
         self.symbol = symbol
         self.target_weight = target_weight
@@ -68,7 +76,14 @@ class SignalEvent(Event):
 
     def to_dict(self) -> dict:
         d = super().to_dict()
-        d.update({"symbol": self.symbol, "target_weight": self.target_weight, "reason": self.reason, "params": self.params})
+        d.update(
+            {
+                "symbol": self.symbol,
+                "target_weight": self.target_weight,
+                "reason": self.reason,
+                "params": self.params,
+            }
+        )
         return d
 
 
@@ -197,7 +212,9 @@ class PortfolioEvent(Event):
     positions: dict = field(default_factory=dict)
     leverage: float = 0.0
 
-    def __init__(self, ts: int, bar_index: int, equity: float, cash: float, positions: dict, leverage: float) -> None:
+    def __init__(
+        self, ts: int, bar_index: int, equity: float, cash: float, positions: dict, leverage: float
+    ) -> None:
         super().__init__(EventType.PORTFOLIO, ts, bar_index)
         self.equity = equity
         self.cash = cash
@@ -206,5 +223,12 @@ class PortfolioEvent(Event):
 
     def to_dict(self) -> dict:
         d = super().to_dict()
-        d.update({"equity": self.equity, "cash": self.cash, "positions": dict(self.positions), "leverage": self.leverage})
+        d.update(
+            {
+                "equity": self.equity,
+                "cash": self.cash,
+                "positions": dict(self.positions),
+                "leverage": self.leverage,
+            }
+        )
         return d

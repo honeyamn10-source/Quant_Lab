@@ -5,6 +5,7 @@ from __future__ import annotations
 import math
 
 import numpy as np
+import pytest
 from quantlab.validation.bootstrap import (
     block_bootstrap,
     bootstrap_sharpe,
@@ -17,6 +18,8 @@ from quantlab.validation.dsr import deflated_sharpe_ratio, expected_max_sharpe
 from quantlab.validation.metrics import sharpe_ratio
 from quantlab.validation.monte_carlo import monte_carlo_null, monte_carlo_paths
 from quantlab.validation.psr import probabilistic_sharpe_ratio, psi_estimate
+
+pytestmark = pytest.mark.statistical
 
 
 def _normal_cdf(x: float) -> float:

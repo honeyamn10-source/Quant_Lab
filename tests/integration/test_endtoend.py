@@ -26,11 +26,16 @@ def test_run_experiment_end_to_end(tmp_path) -> None:
     cfg_path = _make_config(tmp_path)
     ledger_dir = tmp_path / "ledger"
     report_dir = tmp_path / "exp"
-    rc = main([
-        "run-experiment", cfg_path,
-        "--ledger", str(ledger_dir),
-        "--report-dir", str(report_dir),
-    ])
+    rc = main(
+        [
+            "run-experiment",
+            cfg_path,
+            "--ledger",
+            str(ledger_dir),
+            "--report-dir",
+            str(report_dir),
+        ]
+    )
     assert rc == 0
     ledger_file = ledger_dir / "ledger.jsonl"
     assert ledger_file.exists()
@@ -75,7 +80,20 @@ def test_reproduce_command(tmp_path, capsys) -> None:
 
 def test_data_generate_and_audit_cli(tmp_path) -> None:
     out = tmp_path / "data"
-    rc = main(["data", "generate-synthetic", "--out", str(out), "--process", "random_walk", "--seed", "5", "--symbols", "SYN"])
+    rc = main(
+        [
+            "data",
+            "generate-synthetic",
+            "--out",
+            str(out),
+            "--process",
+            "random_walk",
+            "--seed",
+            "5",
+            "--symbols",
+            "SYN",
+        ]
+    )
     assert rc == 0
     f = out / "SYN.json"
     assert f.exists()

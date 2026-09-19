@@ -12,7 +12,9 @@ import numpy as np
 from quantlab.validation.metrics import sharpe_ratio
 
 
-def shuffle_pvalue(returns, stat_fn, n_iter: int = 500, seed: int = 0, greater: bool = True) -> dict:
+def shuffle_pvalue(
+    returns, stat_fn, n_iter: int = 500, seed: int = 0, greater: bool = True
+) -> dict:
     """p-value of the observed statistic under a reshuffle null (no serial edge)."""
     r = np.asarray(returns, dtype=float)
     r = r[~np.isnan(r)]
@@ -51,7 +53,9 @@ def monte_carlo_null(returns, n_iter: int = 500, seed: int = 0) -> dict:
     }
 
 
-def monte_carlo_paths(n_paths: int = 1000, n_periods: int = 252, mu: float = 0.0, sigma: float = 0.05, seed: int = 0) -> np.ndarray:
+def monte_carlo_paths(
+    n_paths: int = 1000, n_periods: int = 252, mu: float = 0.0, sigma: float = 0.05, seed: int = 0
+) -> np.ndarray:
     """Simulate return paths under a Gaussian null model."""
     rng = np.random.default_rng(seed)
     return rng.normal(mu, sigma, size=(n_paths, n_periods))

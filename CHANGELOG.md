@@ -48,3 +48,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   post-mortems.
 - **CLI + reports (Phase 11):** `quantlab` command surface, HTML/JSON report
   generation with equity-curve rendering; FastAPI research API + dashboard stub.
+
+### Fixed
+
+- HTML report rendering from JSON results (API and CLI): results stored as plain
+  dicts now satisfy the renderer's contract via `ReportResult`
+  (`quantlab/reports/html.py`).
+- `quantlab volatility`: iterate the flat model-result dict instead of a
+  nonexistent `models` key.
+- `quantlab sizing --simulate`: runs a concrete Monte-Carlo quick check instead
+  of being a silent no-op.
+- CI typecheck job installs the full dev extras (mypy needs PyYAML type stubs);
+  lint now covers `benchmarks/`.
+- Makefile `test`/`test-all` run the full suite; `test-lookahead` uses the
+  `lookahead` marker; lint/format cover `benchmarks/`.
+- Test suite markers (`lookahead`, `synthetic`, `statistical`) now attached so
+  `--strict-markers` and per-area selection work.

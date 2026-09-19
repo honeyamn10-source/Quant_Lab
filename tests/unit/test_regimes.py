@@ -124,9 +124,11 @@ def test_regime_features_keys_and_lengths() -> None:
 
 
 def test_ensemble_regimes_contract(synthetic_returns, synthetic_features) -> None:
-    aligned = {
-        key: series[1:] for key, series in synthetic_features.items()
-    } if len(next(iter(synthetic_features.values()))) == len(synthetic_returns) + 1 else synthetic_features
+    aligned = (
+        {key: series[1:] for key, series in synthetic_features.items()}
+        if len(next(iter(synthetic_features.values()))) == len(synthetic_returns) + 1
+        else synthetic_features
+    )
     assert all(len(v) == len(synthetic_returns) for v in aligned.values())
     result = ensemble_regimes(synthetic_returns, aligned, seed=0)
     assert result["regime_names"] == [

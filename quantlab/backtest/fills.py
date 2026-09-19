@@ -32,7 +32,11 @@ class FillModel:
         participation_cap: float = 0.10,
         execution_mode: str = "next_open",
     ) -> None:
-        self.profile = get_profile(profile_name_or_obj) if isinstance(profile_name_or_obj, str) else profile_name_or_obj
+        self.profile = (
+            get_profile(profile_name_or_obj)
+            if isinstance(profile_name_or_obj, str)
+            else profile_name_or_obj
+        )
         self.commission_bps = float(commission_bps)
         self.min_commission = float(min_commission)
         self.participation_cap = float(participation_cap)
@@ -87,4 +91,9 @@ class FillModel:
             raise ValueError(f"unsupported order kind {order.kind}")
 
         notional = abs(filled_qty) * exec_price
-        return FillResult(price=exec_price, quantity=filled_qty, commission=self.commission(notional), partial=partial)
+        return FillResult(
+            price=exec_price,
+            quantity=filled_qty,
+            commission=self.commission(notional),
+            partial=partial,
+        )

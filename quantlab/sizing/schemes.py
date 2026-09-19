@@ -14,18 +14,14 @@ def fixed_fraction(equity: float, fraction: float) -> float:
     return float(equity * fraction)
 
 
-def vol_target_weight(
-    annualized_vol: float, target_vol: float, max_weight: float = 2.0
-) -> float:
+def vol_target_weight(annualized_vol: float, target_vol: float, max_weight: float = 2.0) -> float:
     """Weight scaling an asset's annualized vol up to the target, capped."""
     if annualized_vol <= 0.0:
         return float(max_weight)
     return float(min(max(target_vol / annualized_vol, 0.0), max_weight))
 
 
-def risk_parity_weights(
-    cov: np.ndarray, max_leverage: float = 1.5, seed: int = 0
-) -> np.ndarray:
+def risk_parity_weights(cov: np.ndarray, max_leverage: float = 1.5, seed: int = 0) -> np.ndarray:
     """Risk-parity-style weights from the inverse-covariance diagonal.
 
     The non-negative diagonal of a ridge-stabilized inverse covariance is scaled
@@ -40,12 +36,7 @@ def risk_parity_weights(
     else:
         return np.array([], dtype=float)
     equal = np.full(n, float(max_leverage) / n)
-    valid = (
-        c.ndim == 2
-        and c.shape[0] == c.shape[1]
-        and n > 0
-        and np.isfinite(c).all()
-    )
+    valid = c.ndim == 2 and c.shape[0] == c.shape[1] and n > 0 and np.isfinite(c).all()
     if not valid:
         return equal
     try:

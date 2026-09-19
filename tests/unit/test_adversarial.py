@@ -144,10 +144,7 @@ def test_robustness_surface_ratings(monkeypatch) -> None:
 
 def test_degradation_slope_flat() -> None:
     returns = [0.01, 0.02, 0.015, 0.01, 0.02]
-    results = [
-        {"factor": factor, "result": FakeResult(returns)}
-        for factor in (1.0, 1.5, 2.0, 3.0)
-    ]
+    results = [{"factor": factor, "result": FakeResult(returns)} for factor in (1.0, 1.5, 2.0, 3.0)]
     slope = degradation_slope(results, dimension="cost")
     assert slope["dimension"] == "cost"
     assert isinstance(slope["slope_per_1pct"], float)

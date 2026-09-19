@@ -25,7 +25,9 @@ def iid_bootstrap(returns, stat_fn, n_iter: int = 1000, seed: int = 0) -> np.nda
     return out
 
 
-def block_bootstrap(returns, stat_fn, block_size: int = 10, n_iter: int = 1000, seed: int = 0) -> np.ndarray:
+def block_bootstrap(
+    returns, stat_fn, block_size: int = 10, n_iter: int = 1000, seed: int = 0
+) -> np.ndarray:
     r = np.asarray(returns, dtype=float)
     r = r[~np.isnan(r)]
     rng = np.random.default_rng(seed)
@@ -42,7 +44,9 @@ def block_bootstrap(returns, stat_fn, block_size: int = 10, n_iter: int = 1000, 
     return out
 
 
-def stationary_bootstrap(returns, stat_fn, mean_block: float = 5.0, n_iter: int = 1000, seed: int = 0) -> np.ndarray:
+def stationary_bootstrap(
+    returns, stat_fn, mean_block: float = 5.0, n_iter: int = 1000, seed: int = 0
+) -> np.ndarray:
     r = np.asarray(returns, dtype=float)
     r = r[~np.isnan(r)]
     rng = np.random.default_rng(seed)
@@ -71,7 +75,9 @@ def confidence_interval(samples: np.ndarray, alpha: float = 0.05) -> dict:
     return {"lo": float(lo), "hi": float(hi), "mean": float(np.mean(samples))}
 
 
-def bootstrap_sharpe(returns, n_iter: int = 1000, seed: int = 0, block_size: int | None = None) -> dict:
+def bootstrap_sharpe(
+    returns, n_iter: int = 1000, seed: int = 0, block_size: int | None = None
+) -> dict:
     """Bootstrap the Sharpe ratio (block bootstrap if block_size given)."""
     from quantlab.validation.metrics import sharpe_ratio
 

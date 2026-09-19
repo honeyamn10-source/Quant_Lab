@@ -53,9 +53,7 @@ def vol_metrics(forecasts: np.ndarray, targets: np.ndarray) -> dict:
             scores["calibration_slope"] = cov / var_f
         else:
             scores["calibration_slope"] = _NAN
-        scores["direction_accuracy"] = float(
-            np.mean(np.sign(np.diff(f)) == np.sign(np.diff(t)))
-        )
+        scores["direction_accuracy"] = float(np.mean(np.sign(np.diff(f)) == np.sign(np.diff(t))))
     else:
         scores["calibration_slope"] = _NAN
         scores["direction_accuracy"] = _NAN
@@ -74,9 +72,7 @@ def benchmark_models(returns: np.ndarray) -> dict:
     targets = r * r
     results: dict = {model: vol_metrics(forecast(model, r), targets) for model in MODELS}
     ranked = [
-        (model, results[model]["rmse"])
-        for model in MODELS
-        if math.isfinite(results[model]["rmse"])
+        (model, results[model]["rmse"]) for model in MODELS if math.isfinite(results[model]["rmse"])
     ]
     winner = min(ranked, key=lambda pair: pair[1])[0] if ranked else MODELS[0]
     results["winner"] = winner

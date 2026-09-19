@@ -7,10 +7,13 @@ future data must be rejected by the framework itself, never silently accepted.
 from __future__ import annotations
 
 import numpy as np
+import pytest
 from quantlab.backtest.engine import BacktestConfig, BacktestEngine, LookaheadError
 from quantlab.data.barstream import BarStream
 from quantlab.data.schemas import Bar, BarSeries
 from quantlab.strategies.base import Signal, Strategy
+
+pytestmark = pytest.mark.lookahead
 
 
 def _bars(n: int, delay_every: int | None = None) -> list[Bar]:
@@ -19,8 +22,14 @@ def _bars(n: int, delay_every: int | None = None) -> list[Bar]:
         k = int(i // delay_every) if delay_every else i
         bars.append(
             Bar(
-                symbol="T", ts=i, interval_seconds=1,
-                open=100, high=101, low=99, close=100 + 0.1 * i, volume=10,
+                symbol="T",
+                ts=i,
+                interval_seconds=1,
+                open=100,
+                high=101,
+                low=99,
+                close=100 + 0.1 * i,
+                volume=10,
                 available_time=k,
             )
         )
@@ -99,8 +108,19 @@ def _bars_from_path(path: np.ndarray) -> list[Bar]:
     prev = path[0]
     for i, close in enumerate(path):
         lo, hi = min(prev, close), max(prev, close)
-        bars.append(Bar(symbol="T", ts=i, interval_seconds=1, open=prev, high=hi,
-                        low=lo, close=float(close), volume=100, available_time=i))
+        bars.append(
+            Bar(
+                symbol="T",
+                ts=i,
+                interval_seconds=1,
+                open=prev,
+                high=hi,
+                low=lo,
+                close=float(close),
+                volume=100,
+                available_time=i,
+            )
+        )
         prev = close
     return bars
 
@@ -131,8 +151,19 @@ def test_stream_never_exposes_after_midnight_reporting() -> None:
         av = i
         if i == 20:
             av = 25  # late report: usable only from bar 25 onward
-        bars.append(Bar(symbol="T", ts=i, interval_seconds=1, open=100, high=101,
-                        low=99, close=100 + i, volume=10, available_time=av))
+        bars.append(
+            Bar(
+                symbol="T",
+                ts=i,
+                interval_seconds=1,
+                open=100,
+                high=101,
+                low=99,
+                close=100 + i,
+                volume=10,
+                available_time=av,
+            )
+        )
     stream = BarStream(bars, "T")
     # decision at bar 24 (cursor 0 -> 24): bar 20 must still be invisible
     while stream.cursor < 24:

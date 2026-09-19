@@ -43,7 +43,9 @@ def test_verdict_for_insufficient_sample_is_inconclusive() -> None:
 
 def test_record_entry_assigns_increasing_ids_and_persists(tmp_path) -> None:
     graveyard = Graveyard(tmp_path / "graveyard")
-    first = graveyard.record_entry({"hypothesis": "momentum", "symbols": ["AAPL"], "status": "REJECTED"})
+    first = graveyard.record_entry(
+        {"hypothesis": "momentum", "symbols": ["AAPL"], "status": "REJECTED"}
+    )
     second = graveyard.record_entry({"hypothesis": "mean_reversion", "status": "REJECTED"})
 
     assert first["id"] == "STRATEGY-00001"
@@ -68,7 +70,14 @@ def test_record_entry_assigns_increasing_ids_and_persists(tmp_path) -> None:
 
 def test_search_filters(tmp_path) -> None:
     graveyard = Graveyard(tmp_path / "graveyard")
-    graveyard.record_entry({"hypothesis": "a", "status": "REJECTED", "failure_categories": ["overfit"], "symbols": ["AAPL"]})
+    graveyard.record_entry(
+        {
+            "hypothesis": "a",
+            "status": "REJECTED",
+            "failure_categories": ["overfit"],
+            "symbols": ["AAPL"],
+        }
+    )
     graveyard.record_entry({"hypothesis": "b", "status": "INCONCLUSIVE", "symbols": ["TSLA"]})
 
     assert len(graveyard.search(status="REJECTED")) == 1

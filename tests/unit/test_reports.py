@@ -22,9 +22,7 @@ class FakeResult:
         self.returns = list(returns)
         if equity_curve is None:
             arr = np.asarray(returns, dtype=float)
-            self.equity_curve = [
-                (i, float(v)) for i, v in enumerate(np.cumprod(1.0 + arr))
-            ]
+            self.equity_curve = [(i, float(v)) for i, v in enumerate(np.cumprod(1.0 + arr))]
         else:
             self.equity_curve = list(equity_curve)
         self.signals: list = []

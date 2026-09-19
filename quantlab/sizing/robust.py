@@ -75,9 +75,9 @@ def evaluate_policy(
     if not 0.0 < kelly_true < 1.0:
         growth_ratio_to_optimal = float("nan")
     else:
-        g_opt = win_prob * np.log(1.0 + payoff_ratio * kelly_true) + (
-            1.0 - win_prob
-        ) * np.log(1.0 - kelly_true)
+        g_opt = win_prob * np.log(1.0 + payoff_ratio * kelly_true) + (1.0 - win_prob) * np.log(
+            1.0 - kelly_true
+        )
         growth_ratio_to_optimal = (
             float(median_growth / (n_steps * g_opt)) if g_opt > 0.0 else float("nan")
         )
@@ -119,7 +119,13 @@ def corrupted_edge_report(
     worst_ruin = 0.0
     for i, p in enumerate(probs):
         row = evaluate_policy(
-            p, payoff_ratio, policy_frac, kelly_true, n_steps=n_steps, n_paths=n_paths, seed=seed + i
+            p,
+            payoff_ratio,
+            policy_frac,
+            kelly_true,
+            n_steps=n_steps,
+            n_paths=n_paths,
+            seed=seed + i,
         )
         table.append({"win_prob_used": p, **row})
         worst_ruin = max(worst_ruin, row["prob_of_ruin"])

@@ -25,12 +25,16 @@ def expected_max_sharpe(n_trials: int, degenerate: float = 1.0, variance_sr: flo
 
     z1 = _normal_ppf(1.0 - 1.0 / n_trials)
     z2 = _normal_ppf(1.0 - 1.0 / (n_trials * math.e))
-    return math.sqrt(max(variance_sr, 0.0)) * degenerate * (
-        (1.0 - _EULER_GAMMA) * z1 + _EULER_GAMMA * z2
+    return (
+        math.sqrt(max(variance_sr, 0.0))
+        * degenerate
+        * ((1.0 - _EULER_GAMMA) * z1 + _EULER_GAMMA * z2)
     )
 
 
-def deflated_sharpe_ratio(returns, n_trials: int, benchmark_sr: float = 0.0, periods_per_year: int = 252) -> dict:
+def deflated_sharpe_ratio(
+    returns, n_trials: int, benchmark_sr: float = 0.0, periods_per_year: int = 252
+) -> dict:
     """Compute PSR against the expected-maximum benchmark defined by N trials."""
     import numpy as np
 
@@ -41,7 +45,9 @@ def deflated_sharpe_ratio(returns, n_trials: int, benchmark_sr: float = 0.0, per
     n = len(r)
     if n < 3 or n_trials < 1:
         return {"dsr": 0.0, "sr_0": 0.0, "n_trials": int(n_trials), "n": n}
-    sr_hat_rescaled = sharpe_ratio(r, periods_per_year=periods_per_year) / math.sqrt(periods_per_year)
+    sr_hat_rescaled = sharpe_ratio(r, periods_per_year=periods_per_year) / math.sqrt(
+        periods_per_year
+    )
     mu = float(np.mean(r))
     sd = float(np.std(r, ddof=1))
     skew = float(np.mean((r - mu) ** 3) / sd**3) if sd > 0 else 0.0
@@ -50,7 +56,9 @@ def deflated_sharpe_ratio(returns, n_trials: int, benchmark_sr: float = 0.0, per
 
     sr_0 = expected_max_sharpe(n_trials=n_trials, variance_sr=var_sr)
     sr_0_ann = sr_0 * math.sqrt(periods_per_year)  # expected-max per-period -> annualized
-    psr_out = probabilistic_sharpe_ratio(r, benchmark_sr=sr_0_ann, periods_per_year=periods_per_year)
+    psr_out = probabilistic_sharpe_ratio(
+        r, benchmark_sr=sr_0_ann, periods_per_year=periods_per_year
+    )
     psr_out["sr_0"] = float(sr_0_ann)
     psr_out["n_trials"] = int(n_trials)
     return {"dsr": psr_out["psr"], "sr_0": float(sr_0_ann), "n_trials": int(n_trials), "n": n}

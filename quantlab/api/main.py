@@ -52,24 +52,12 @@ if _lightweight():
             record = ledger.get(experiment_id)
         except KeyError as exc:
             raise HTTPException(status_code=404, detail=str(exc)) from exc
-        from quantlab.reports.html import render_html_report
+        from quantlab.reports.html import ReportResult, render_html_report
 
         payload = record.get("results") or {}
         results = payload.get("results", payload)
         html = render_html_report(
-            type(
-                "R",
-                (),
-                {
-                    "returns": results.get("returns", []),
-                    "equity_curve": results.get("equity_curve", []),
-                    "signals": results.get("signals", []),
-                    "fills": results.get("fills", []),
-                    "orders": results.get("orders", []),
-                    "rejects": results.get("rejects", []),
-                    "config": results.get("config", {}),
-                },
-            )(),
+            ReportResult(results.get("results", results)),
             validation=payload.get("validation", {}),
             experiment_id=experiment_id,
         )

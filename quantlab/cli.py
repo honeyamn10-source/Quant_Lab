@@ -82,9 +82,18 @@ def _load_series_json(path: Path) -> BarSeries:
 def _series_from_rows_file(path: Path, symbol: str) -> BarSeries:
     doc = json.loads(path.read_text(encoding="utf-8"))
     bars = [
-        Bar(symbol=symbol, ts=r["ts"], interval_seconds=r.get("interval_seconds", 86400), open=r["open"],
-            high=r["high"], low=r["low"], close=r["close"], volume=r.get("volume", 0.0),
-            available_time=r.get("available_time"), source=r.get("source", "file"))
+        Bar(
+            symbol=symbol,
+            ts=r["ts"],
+            interval_seconds=r.get("interval_seconds", 86400),
+            open=r["open"],
+            high=r["high"],
+            low=r["low"],
+            close=r["close"],
+            volume=r.get("volume", 0.0),
+            available_time=r.get("available_time"),
+            source=r.get("source", "file"),
+        )
         for r in doc
     ]
     return BarSeries(symbol, bars)
@@ -115,11 +124,15 @@ def _build_from_config(cfg) -> tuple[dict[str, BarSeries], list[str] | None]:
     if cfg.data.process == "pairs":
         if len(symbols) != 2:
             raise ValueError("pairs process requires exactly two symbols")
-        a, b = generate_pairs(n=int(cfg.data.n_bars), seed=int(cfg.data.seed), symbols=(symbols[0], symbols[1]))
+        a, b = generate_pairs(
+            n=int(cfg.data.n_bars), seed=int(cfg.data.seed), symbols=(symbols[0], symbols[1])
+        )
         streams = {a.symbol: a, b.symbol: b}
         return streams, None
     for sym in symbols:
-        streams[sym] = generate(cfg.data.process, n=int(cfg.data.n_bars), seed=int(cfg.data.seed), symbol=sym)
+        streams[sym] = generate(
+            cfg.data.process, n=int(cfg.data.n_bars), seed=int(cfg.data.seed), symbol=sym
+        )
     return streams, None
 
 
@@ -150,20 +163,26 @@ def cmd_run_experiment(args) -> int:
     out_dir = Path(getattr(args, "report_dir", None) or "experiments") / record["experiment_id"]
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "results.json").write_text(json.dumps(results_payload, indent=2), encoding="utf-8")
-    print(f"[{record['experiment_id']}] {cfg.strategy} on {cfg.data.process} -> "
-          f"final ${final:,.0f} | sharpe {validation['metrics'].get('sharpe', 0):.2f}")
+    print(
+        f"[{record['experiment_id']}] {cfg.strategy} on {cfg.data.process} -> "
+        f"final ${final:,.0f} | sharpe {validation['metrics'].get('sharpe', 0):.2f}"
+    )
     return 0
 
 
 def cmd_backtest(args) -> int:
     cfg = load_run_config(args.config)
     streams, _ = _build_from_config(cfg)
-    result = BacktestEngine(_backtest_cfg(cfg)).run(create_strategy(cfg.strategy, cfg.strategy_params), streams)
+    result = BacktestEngine(_backtest_cfg(cfg)).run(
+        create_strategy(cfg.strategy, cfg.strategy_params), streams
+    )
     met = metrics.all_metrics(result.returns)
     print(f"strategy={cfg.strategy} final=${result.final_equity():,.0f}")
     for k, v in met.items():
         print(f"  {k}: {v:.4f}")
-    print(f"  fills={len(result.fills)} rejects={len(result.rejects)} signals={len(result.signals)}")
+    print(
+        f"  fills={len(result.fills)} rejects={len(result.rejects)} signals={len(result.signals)}"
+    )
     return 0
 
 
@@ -195,8 +214,12 @@ def cmd_stress(args) -> int:
         if "strategy_params" in overrides:
             params.update(overrides["strategy_params"])
         streams, _ = _build_from_config(cfg)
-        res = BacktestEngine(BacktestConfig(**bcfg)).run(create_strategy(cfg.strategy, params), streams)
-        return type("R", (), {"returns": res.returns, "signals": res.signals, "equity": res.equity})()
+        res = BacktestEngine(BacktestConfig(**bcfg)).run(
+            create_strategy(cfg.strategy, params), streams
+        )
+        return type(
+            "R", (), {"returns": res.returns, "signals": res.signals, "equity": res.equity}
+        )()
 
     sweeps = {
         "params": param_perturbation_sweep(run_with, cfg.strategy_params),
@@ -211,6 +234,7 @@ def cmd_stress(args) -> int:
 
 def _record_to_run_config(run_config: dict):
     from quantlab.experiments.config import RunConfig
+
     return RunConfig(**run_config)
 
 
@@ -268,27 +292,26 @@ def cmd_volatility(args) -> int:
     returns = np.diff(closes) / closes[:-1]
     report = benchmark_models(returns)
     print(f"winner: {report['winner']}")
-    for name, m in report["models"].items():
-        print(f"  {name:10s} rmse={m.get('rmse', float('nan')):.5f} qlike={m.get('qlike', float('nan')):.4f}")
+    for name, m in report.items():
+        if name == "winner":
+            continue
+        rmse = m.get("rmse", float("nan"))
+        qlike = m.get("qlike", float("nan"))
+        print(f"  {name:10s} rmse={rmse:.5f} qlike={qlike:.4f}")
     return 0
 
 
 def cmd_report(args) -> int:
-    from quantlab.reports.html import render_html_report
+    from quantlab.reports.html import ReportResult, render_html_report
 
     ledger = args.ledger if hasattr(args, "ledger") else default_ledger()
     record = ledger.get(args.experiment_id)
-    payload = (record.get("results") or {})
+    payload = record.get("results") or {}
     results = payload.get("results", payload)
     validation = payload.get("validation", {})
-    html = render_html_report(type("R", (), {"returns": results.get("returns", []),
-                                             "equity_curve": results.get("equity_curve", []),
-                                             "signals": results.get("signals", []),
-                                             "fills": results.get("fills", []),
-                                             "orders": results.get("orders", []),
-                                             "rejects": results.get("rejects", []),
-                                             "config": results.get("config", {})})(),
-                              validation=validation, experiment_id=args.experiment_id)
+    html = render_html_report(
+        ReportResult(results), validation=validation, experiment_id=args.experiment_id
+    )
     out = Path("experiments") / args.experiment_id / "report.html"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(html, encoding="utf-8")
@@ -302,7 +325,9 @@ def cmd_graveyard(args) -> int:
     gy = Graveyard()
     if args.action == "list":
         for e in gy.list_entries()[-20:]:
-            print(f"{e.get('id')} {e.get('status', ''):12s} {e.get('primary_failure', ''):28s} raw={e.get('raw_sharpe', '?')} net={e.get('net_sharpe', '?')}")
+            print(
+                f"{e.get('id')} {e.get('status', ''):12s} {e.get('primary_failure', ''):28s} raw={e.get('raw_sharpe', '?')} net={e.get('net_sharpe', '?')}"
+            )
         print(f"(total entries: {gy.count()})")
         return 0
     raise SystemExit(f"unknown graveyard action {args.action}")
@@ -317,7 +342,9 @@ def cmd_reproduce(args) -> int:
     def run_fn(rec):
         cfg = _record_to_run_config(rec.get("run_config") or {})
         streams, _ = _build_from_config(cfg)
-        res = BacktestEngine(_backtest_cfg(cfg)).run(create_strategy(cfg.strategy, cfg.strategy_params), streams)
+        res = BacktestEngine(_backtest_cfg(cfg)).run(
+            create_strategy(cfg.strategy, cfg.strategy_params), streams
+        )
         return {"final_equity": res.final_equity(), "sharpe": metrics.sharpe_ratio(res.returns)}
 
     out = reproduce(record, run_fn, ledger)
@@ -328,8 +355,20 @@ def cmd_reproduce(args) -> int:
 
 def cmd_sizing(args) -> int:
     from quantlab.sizing.kelly import fractional_kelly, kelly_fraction
-    print("binary Kelly for p=.55,b=1:", kelly_fraction(0.55, 1.0))
-    print("half Kelly:", fractional_kelly(kelly_fraction(0.55, 1.0), 0.5))
+
+    k = kelly_fraction(0.55, 1.0)
+    print("binary Kelly for p=.55,b=1:", k)
+    print("half Kelly:", fractional_kelly(k, 0.5))
+    if args.simulate:
+        from quantlab.validation.monte_carlo import monte_carlo_paths
+
+        frac = fractional_kelly(k, 0.5)
+        paths = monte_carlo_paths(n_paths=2000, n_periods=252, mu=0.08, sigma=0.20, seed=0)
+        wealth = 1_000_000.0 * (1.0 + frac * (np.asarray(paths, dtype=float) - 1.0))
+        p5, p50, p95 = np.percentile(wealth, [5, 50, 95])
+        mean = float(wealth.mean())
+        print("simulate (half-Kelly on 8%/20% GBM, 2000 paths):")
+        print(f"  5th={p5:,.0f} median={p50:,.0f} 95th={p95:,.0f} mean={mean:,.0f}")
     return 0
 
 

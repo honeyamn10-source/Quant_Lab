@@ -10,7 +10,7 @@ Thanks for helping make Quant Lab more honest, not less.
 3. **Reproducibility is non-negotiable.** New strategies/configs must be fully
    specified by a config file + seed.
 4. **Formatting & types.** `make lint` (ruff) and `make typecheck` (mypy) must
-   pass. Sign off with the `Addendum` from `exclude: out-of-scope`.
+   pass. Note your change under `[Unreleased]` in `CHANGELOG.md`.
 5. **Keep the core dependency-light.** Heavy frameworks belong behind optional
    adapters in `[project.optional-dependencies]`.
 
