@@ -64,6 +64,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `.gitignore` now honors the documented contract that `datasets/*.json` raw
   files stay out of git; `regimes` CLI docstring no longer advertises a
   nonexistent `--symbol` flag.
+- `quantlab data generate-synthetic --process pairs` now writes the cointegrated
+  pair instead of failing on an unknown process; CLI surface tests added.
 - Makefile `test`/`test-all` run the full suite; `test-lookahead` uses the
   `lookahead` marker; lint/format cover `benchmarks/`.
 - Test suite markers (`lookahead`, `synthetic`, `statistical`) now attached so

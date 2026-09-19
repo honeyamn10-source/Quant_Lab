@@ -239,12 +239,24 @@ def _record_to_run_config(run_config: dict):
 
 
 def cmd_data(args) -> int:
-    from quantlab.synthetic.markets import generate
-
     if args.action == "generate-synthetic":
         out = Path(args.out)
         out.mkdir(parents=True, exist_ok=True)
         symbols = args.symbols.split(",") if args.symbols else ["SYN"]
+        if args.process == "pairs":
+            from quantlab.synthetic.markets import generate_pairs
+
+            if len(symbols) != 2:
+                raise SystemExit("pairs process requires exactly two symbols (--symbols A,B)")
+            a, b = generate_pairs(
+                n=int(args.n), seed=int(args.seed), symbols=(symbols[0], symbols[1])
+            )
+            for series in (a, b):
+                _save_series_json(series, out / f"{series.symbol}.json")
+                print(f"wrote {out / (series.symbol + '.json')}: {len(series)} bars")
+            return 0
+        from quantlab.synthetic.markets import generate
+
         for i, sym in enumerate(symbols):
             series = generate(args.process, n=int(args.n), seed=int(args.seed) + i, symbol=sym)
             _save_series_json(series, out / f"{sym}.json")
