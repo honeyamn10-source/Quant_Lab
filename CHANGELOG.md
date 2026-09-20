@@ -70,3 +70,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `lookahead` marker; lint/format cover `benchmarks/`.
 - Test suite markers (`lookahead`, `synthetic`, `statistical`) now attached so
   `--strict-markers` and per-area selection work.
+- CI collection crash (`ModuleNotFoundError: No module named 'quantlab.data'`):
+  `.gitignore` patterns `data/` and `experiments/` shadowed the `quantlab.data`
+  and `quantlab.experiments` source packages, so they were never committed and
+  were missing from the wheel. Patterns are now root-anchored and the two
+  packages (plus their ruff cleanups) are tracked.

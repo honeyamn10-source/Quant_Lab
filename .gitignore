@@ -10,9 +10,9 @@ htmlcov/
 build/
 dist/
 *.parquet
-experiments/
-data/
-datasets/*.json
+/experiments/
+/data/
+/datasets/*.json
 !.github/
 *.pyc
 .DS_Store
