@@ -1,20 +1,18 @@
-<div align="center">
+![Quant Lab](docs/assets/cover.svg)
 
 # Quant Lab
 
-**An open quantitative research & strategy-falsification platform.**
+A Python research platform for testing assumptions about market data, execution and strategy robustness.
 
-> Don't prove your strategy works. Try to prove it doesn't.
+[Project website](https://honeyamn10-source.github.io/Quant_Lab/) · [Build results](https://github.com/honeyamn10-source/Quant_Lab/actions)
 
-[![CI](https://img.shields.io/github/actions/workflow/status/honeyamn10-source/Quant_Lab/ci.yml?branch=main&label=CI)](https://github.com/honeyamn10-source/Quant_Lab/actions)
-[![License: MIT](https://img.shields.io/github/license/honeyamn10-source/Quant_Lab)](LICENSE)
-[![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-3776AB)](https://www.python.org/)
+## What it does
 
-</div>
+- **Generate evidence.** Use synthetic markets and point-in-time data tools.
+- **Challenge assumptions.** Run backtests, validation and execution-cost experiments.
+- **Keep the record.** Experiment ledgers and generated reports preserve results for reproduction.
 
-Quant Lab detects backtest overfitting, data leakage, unrealistic execution
-assumptions and fragile trading strategies. Every experiment runs a battery of
-statistical falsification tests, and failures are kept as permanent evidence.
+> Research software. Statistical checks expose some failure modes; they do not guarantee unbiased models or profitable strategies. Read the methodology before interpreting results.
 
 ## Features
 
