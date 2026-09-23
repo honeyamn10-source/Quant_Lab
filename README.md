@@ -2,6 +2,20 @@
 
 # Quant Lab
 
+<!-- repo-badges:start -->
+<div align="center">
+
+[![Stars](https://img.shields.io/github/stars/honeyamn10-source/Quant_Lab?style=flat-square&logo=github&label=Stars)](https://github.com/honeyamn10-source/Quant_Lab/stargazers)
+[![Forks](https://img.shields.io/github/forks/honeyamn10-source/Quant_Lab?style=flat-square&logo=github&label=Forks)](https://github.com/honeyamn10-source/Quant_Lab/forks)
+[![Issues](https://img.shields.io/github/issues/honeyamn10-source/Quant_Lab?style=flat-square&logo=github&label=Issues)](https://github.com/honeyamn10-source/Quant_Lab/issues)
+[![Last Commit](https://img.shields.io/github/last-commit/honeyamn10-source/Quant_Lab?style=flat-square&logo=github&label=Last%20Commit)](https://github.com/honeyamn10-source/Quant_Lab/commits/main)
+
+[Repository](https://github.com/honeyamn10-source/Quant_Lab) · [Issues](https://github.com/honeyamn10-source/Quant_Lab/issues) · [Pull Requests](https://github.com/honeyamn10-source/Quant_Lab/pulls) · [Actions](https://github.com/honeyamn10-source/Quant_Lab/actions)
+
+</div>
+<!-- repo-badges:end -->
+
+
 A Python research platform for testing assumptions about market data, execution and strategy robustness.
 
 [Project website](https://honeyamn10-source.github.io/Quant_Lab/) · [Build results](https://github.com/honeyamn10-source/Quant_Lab/actions)
