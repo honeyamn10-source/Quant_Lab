@@ -36,7 +36,7 @@ ml = [
     "optuna>=3.6",
 ]
 # Experiment tracking
-tracking = ["mlflow>=2.10"]
+tracking = ["mlflow>=3.18.0"]
 # Data-frame storage layer (DuckDB queries Parquet directly)
 storage = ["pandas>=2.2", "polars>=1.0", "duckdb>=1.0", "pyarrow>=16.0"]
 # Web dashboard / API
