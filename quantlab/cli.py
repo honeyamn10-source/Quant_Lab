@@ -26,15 +26,14 @@ import numpy as np
 
 import quantlab
 from quantlab.backtest.engine import BacktestConfig, BacktestEngine
+from quantlab.data.fingerprint import dataset_fingerprint
 from quantlab.data.schemas import Bar, BarSeries
 from quantlab.data.validation import audit_bars
 from quantlab.experiments.config import load_run_config
 from quantlab.experiments.registry import ExperimentLedger, default_ledger, scaffold_default
+from quantlab.reports.json import classify_validation, json_safe, render_validation_report
 from quantlab.strategies.benchmark import create_strategy, list_strategies
 from quantlab.validation import metrics
-from quantlab.validation.bootstrap import bootstrap_sharpe
-from quantlab.validation.dsr import deflated_sharpe_ratio
-from quantlab.validation.psr import probabilistic_sharpe_ratio
 
 
 # ---------------------------------------------------------------- data I/O --
@@ -99,20 +98,30 @@ def _series_from_rows_file(path: Path, symbol: str) -> BarSeries:
     return BarSeries(symbol, bars)
 
 
-def _run_validation(results: dict) -> dict:
+def _run_validation(results: dict, n_trials: int = 1) -> dict:
+    """Run the full falsification battery, not just point estimates.
+
+    The trial count comes from the immutable experiment ledger so repeated
+    searches are deflated instead of being scored as a single preselected run.
+    """
     returns = np.asarray(results.get("returns") or [], dtype=float)
     if len(returns) < 20:
         return {"note": "insufficient returns for validation battery", "metrics": {}}
-    met = metrics.all_metrics(returns)
-    psr = probabilistic_sharpe_ratio(returns, benchmark_sr=0.0)
-    dsr = deflated_sharpe_ratio(returns, n_trials=1)
-    boot = bootstrap_sharpe(returns, n_iter=300, seed=0)
-    return {
-        "metrics": met,
-        "psr": psr,
-        "dsr": dsr,
-        "bootstrap95": boot["ci95"],
-    }
+    battery = render_validation_report(returns, n_trials=max(1, int(n_trials)))
+    status, concerns = classify_validation(battery)
+    return json_safe(
+        {
+            "metrics": battery["metrics"],
+            "psr": battery["psr"],
+            "dsr": battery["dsr"],
+            "pbo": battery["pbo"],
+            "bootstrap": battery["bootstrap"],
+            "bootstrap95": battery["bootstrap"]["ci95"],
+            "n_trials": battery["n_trials"],
+            "status": status,
+            "concerns": concerns,
+        }
+    )
 
 
 def _build_from_config(cfg) -> tuple[dict[str, BarSeries], list[str] | None]:
@@ -147,9 +156,10 @@ def cmd_run_experiment(args) -> int:
     strategy = create_strategy(cfg.strategy, cfg.strategy_params)
     result = BacktestEngine(_backtest_cfg(cfg)).run(strategy, streams)
     results_json = result.to_dict()
-    validation = _run_validation(results_json)
 
     ledger: ExperimentLedger = args.ledger if hasattr(args, "ledger") else default_ledger()
+    n_trials = ledger.count() + 1  # the immutable ledger records every search trial
+    validation = _run_validation(results_json, n_trials=n_trials)
     record = ledger.create(run_name=cfg.name, strategy_name=cfg.strategy, run_config=cfg)
     final = result.final_equity()
     results_payload = {
@@ -158,6 +168,19 @@ def cmd_run_experiment(args) -> int:
         "final_equity": final,
         "total_return": final / cfg.initial_cash - 1.0,
         "rejected_orders": len(result.rejects),
+        "n_trials": n_trials,
+        "dataset_fingerprints": {
+            symbol: dataset_fingerprint(series) for symbol, series in streams.items()
+        },
+        "data_window": {
+            symbol: {
+                "start_ts": series.bars[0].ts,
+                "end_ts": series.bars[-1].ts,
+                "n_bars": len(series.bars),
+            }
+            for symbol, series in streams.items()
+            if series.bars
+        },
     }
     ledger.complete(record["experiment_id"], results_payload)
     out_dir = Path(getattr(args, "report_dir", None) or "experiments") / record["experiment_id"]
@@ -351,15 +374,19 @@ def cmd_reproduce(args) -> int:
     ledger = args.ledger if hasattr(args, "ledger") else default_ledger()
     record = ledger.get(args.experiment_id)
 
+    cfg = _record_to_run_config(record.get("run_config") or {})
+    streams, _ = _build_from_config(cfg)
+    fingerprints = {
+        symbol: dataset_fingerprint(series) for symbol, series in streams.items()
+    }
+
     def run_fn(rec):
-        cfg = _record_to_run_config(rec.get("run_config") or {})
-        streams, _ = _build_from_config(cfg)
         res = BacktestEngine(_backtest_cfg(cfg)).run(
             create_strategy(cfg.strategy, cfg.strategy_params), streams
         )
         return {"final_equity": res.final_equity(), "sharpe": metrics.sharpe_ratio(res.returns)}
 
-    out = reproduce(record, run_fn, ledger)
+    out = reproduce(record, run_fn, ledger, dataset_fingerprints=fingerprints)
     print(json.dumps({k: v for k, v in out.items() if k != "result"}, indent=2))
     print("result:", out.get("result"))
     return 0

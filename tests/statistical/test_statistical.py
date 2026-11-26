@@ -6,6 +6,7 @@ import math
 
 import numpy as np
 import pytest
+from quantlab.reports.json import classify_validation, render_validation_report
 from quantlab.validation.bootstrap import (
     block_bootstrap,
     bootstrap_sharpe,
@@ -132,3 +133,36 @@ def test_monte_carlo_paths_shape() -> None:
 def test_psi_estimate_gaussian_unit() -> None:
     psi = psi_estimate(0.0, 1000, skew=0.0, kurtosis=3.0)
     assert abs(psi - 1.0 / math.sqrt(999)) < 1e-6
+
+
+def test_cscv_reports_consistent_inversion_accounting() -> None:
+    rng = np.random.default_rng(11)
+    matrix = rng.normal(0.0004, 0.01, size=(600, 6))
+    matrix[:, 0] += 0.002
+    logits = cscv_logits(matrix, num_splits=6)
+    out = probability_of_backtest_overfitting(matrix, num_splits=6)
+    assert len(logits["oos_ranks"]) == out["n_combinations"] == 20
+    assert out["pbo"] == pytest.approx(
+        out["n_inversions"] / out["n_combinations"], abs=1e-9
+    )
+    assert 0.0 <= out["pbo"] <= 1.0
+
+
+def test_validation_verdict_wiring_is_hard_gated() -> None:
+    strong = {
+        "psr": {"psr": 0.9},
+        "dsr": {"dsr": 0.8},
+        "pbo": {"pbo": 0.1},
+        "bootstrap": {"ci95": {"lo": 0.001, "hi": 0.01}},
+    }
+    assert classify_validation(strong) == ("SURVIVED_BATTERY", [])
+    assert classify_validation({**strong, "pbo": {"pbo": 0.7}})[0] == "REJECTED"
+    assert classify_validation({**strong, "dsr": {"dsr": 0.1}})[0] == "REJECTED"
+    status, concerns = classify_validation({**strong, "regime_dependency": True})
+    assert status == "INSUFFICIENT_EVIDENCE"
+    assert any("regime dependency" in concern for concern in concerns)
+
+    rng = np.random.default_rng(12)
+    battery = render_validation_report(rng.normal(0.001, 0.01, size=300), n_trials=25)
+    assert {"metrics", "psr", "dsr", "pbo", "bootstrap", "n_trials"} <= battery.keys()
+    assert battery["n_trials"] == 25

@@ -92,6 +92,22 @@ def audit_bars(bars: list[Bar] | BarSeries) -> DataAudit:
     if np.any(np.diff(ts) <= 0):
         audit.add("OUT_OF_ORDER", Severity.ERROR, symbol, "timestamps not strictly increasing")
 
+    # Point-in-time integrity: information cannot be usable before it exists.
+    # Late availability (available_time > ts) is legitimate; availability at or
+    # before the event time is not representable and must fail the data audit.
+    early = [
+        index
+        for index, bar in enumerate(bars)
+        if bar.available_time is not None and bar.available_time < bar.ts
+    ]
+    if early:
+        audit.add(
+            "AVAIL_BEFORE_EVENT",
+            Severity.ERROR,
+            symbol,
+            f"available_time precedes event_time at index {early[0]}",
+        )
+
     # Impossible OHLC
     if np.any(lows < 0) or np.any(closes < 0):
         audit.add("NEGATIVE_PRICE", Severity.ERROR, symbol, "negative price found")

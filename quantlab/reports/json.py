@@ -105,7 +105,11 @@ def classify_validation(validation: dict | None) -> tuple[str, list[str]]:
 
 
 def _json_safe(value: Any) -> Any:
-    """Collapse non-finite floats so the report stays strictly JSON-safe."""
+    """Collapse arrays/numpy scalars and non-finite floats into JSON-safe data."""
+    if isinstance(value, np.ndarray):
+        return _json_safe(value.tolist())
+    if isinstance(value, np.generic):
+        return _json_safe(value.item())
     if isinstance(value, float) and not math.isfinite(value):
         return None
     if isinstance(value, dict):
@@ -113,6 +117,11 @@ def _json_safe(value: Any) -> Any:
     if isinstance(value, (list, tuple)):
         return [_json_safe(item) for item in value]
     return value
+
+
+def json_safe(value: Any) -> Any:
+    """Public JSON-safe copy for CLI validation payloads."""
+    return _json_safe(value)
 
 
 def _final_equity(result: ReportableResult) -> float:

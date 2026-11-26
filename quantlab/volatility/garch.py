@@ -299,7 +299,7 @@ def _fit_garch_arch(returns, p: int, q: int, seed: int, max_iter: int) -> dict:
         from arch import arch_model  # type: ignore[import-not-found]
     except ImportError as exc:  # pragma: no cover - guarded by has_arch()
         raise RuntimeError("arch required when use_arch=True; pip install arch") from exc
-    am = arch_model(returns, p=p, q=q, mean="Zero", vol="GARCH", dist="normal", rescale=False)
+    am = arch_model(returns, p=p, q=q, mean="zero", vol="garch", dist="normal", rescale=False)
     res = am.fit(disp="off", show_warning=False, options={"maxiter": max_iter})
     params = res.params
     omega = float(params["omega"])

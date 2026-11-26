@@ -11,6 +11,8 @@ from __future__ import annotations
 import numpy as np
 import pytest
 from quantlab.backtest.engine import BacktestConfig, BacktestEngine
+from quantlab.regimes.features import normalize_features, regime_features
+from quantlab.regimes.models import ensemble_regimes
 from quantlab.strategies.benchmark import BuyAndHold, RandomStrategy, VolTarget, create_strategy
 from quantlab.strategies.pairs import PairsSpread
 from quantlab.synthetic.markets import available_processes, generate, generate_pairs
@@ -102,3 +104,17 @@ def test_mean_reversion_profits_in_mean_reversion_market() -> None:
         {data.symbol: data},
     )
     assert result.final_equity() > result.config.initial_cash
+
+
+def test_regime_ensemble_is_normalized_on_known_regime_switch() -> None:
+    data = generate("regime_switch", n=300, seed=7)
+    features = normalize_features(regime_features(np.asarray(data.closes(), dtype=float)))
+    returns = np.asarray(data.returns(), dtype=float)
+    returns = np.concatenate(([0.0], returns))  # align with the feature timeline
+    out = ensemble_regimes(returns, features, seed=7)
+    probs = np.asarray(out["probabilities"], dtype=float)
+    finite = np.isfinite(probs).all(axis=1) & (probs.sum(axis=1) > 0)
+    assert finite.any()
+    assert np.allclose(probs[finite].sum(axis=1), 1.0)
+    consensus = np.asarray(out["consensus"], dtype=float)
+    assert np.all((consensus >= 0.0) & (consensus <= 1.0))

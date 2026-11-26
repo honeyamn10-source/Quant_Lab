@@ -9,8 +9,10 @@ from __future__ import annotations
 import numpy as np
 import pytest
 from quantlab.backtest.engine import BacktestConfig, BacktestEngine, LookaheadError
-from quantlab.data.barstream import BarStream
-from quantlab.data.schemas import Bar, BarSeries
+from quantlab.data.barstream import BarStream, audit_stream
+from quantlab.data.fingerprint import dataset_fingerprint
+from quantlab.data.schemas import Bar, BarSeries, PointInTimeRow
+from quantlab.data.validation import audit_bars, audit_dataset
 from quantlab.strategies.base import Signal, Strategy
 
 pytestmark = pytest.mark.lookahead
@@ -173,3 +175,32 @@ def test_stream_never_exposes_after_midnight_reporting() -> None:
     idx20 = np.where(closes == 120.0)[0]
     assert len(closes) == 24  # bars 0..24 flow but bar 20 (av=25) stays hidden
     assert idx20.size == 0
+
+
+def test_bar_audit_rejects_available_time_before_event_time() -> None:
+    """A corrupted point-in-time bar must fail the data gate and change its hash."""
+    bars = _bars(10)
+    clean_fp = dataset_fingerprint(BarSeries("T", bars, 1))
+    bars[4] = bars[4].model_copy(update={"available_time": bars[4].ts - 1})
+
+    audit = audit_bars(bars)
+    assert any(
+        issue.code == "AVAIL_BEFORE_EVENT" and issue.is_error for issue in audit.issues
+    )
+    assert dataset_fingerprint(BarSeries("T", bars, 1)) != clean_fp
+    assert any("available_time precedes" in message for message in audit_stream(BarStream(bars, "T")))
+
+    row = PointInTimeRow.model_construct(
+        symbol="T",
+        ts=100,
+        available_time=99,
+        ingestion_time=100,
+        open=1,
+        high=2,
+        low=0.5,
+        close=1.5,
+    )
+    row_audit = audit_dataset([row])
+    assert any(
+        issue.code == "AVAIL_BEFORE_EVENT" and issue.is_error for issue in row_audit.issues
+    )

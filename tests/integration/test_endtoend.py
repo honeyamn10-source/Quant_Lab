@@ -6,6 +6,7 @@ import json
 
 from quantlab.cli import main
 from quantlab.experiments.config import RunConfig, dump_run_config
+from quantlab.reports.json import classify_validation
 
 
 def _make_config(tmp_path, name: str = "it", process: str = "random_walk", n_bars: int = 60) -> str:
@@ -46,6 +47,13 @@ def test_run_experiment_end_to_end(tmp_path) -> None:
     assert "sharpe" in record["results"]["validation"]["metrics"]
     out_dir = report_dir / "EXP-0001"
     assert (out_dir / "results.json").exists()
+    payload = json.loads((out_dir / "results.json").read_text(encoding="utf-8"))
+    validation = payload["validation"]
+    assert validation["n_trials"] == 1
+    assert {"psr", "dsr", "pbo", "bootstrap95", "status", "concerns"} <= validation.keys()
+    assert validation["status"] == classify_validation(validation)[0]
+    assert len(payload["dataset_fingerprints"]["SYN"]) == 64
+    assert payload["data_window"]["SYN"]["n_bars"] == 60
 
 
 def test_backtest_command_reports_numbers(tmp_path, capsys) -> None:
